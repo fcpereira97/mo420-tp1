@@ -3,6 +3,6 @@
 
 using namespace std;
 
-void kruskal(int n_vertices, int n_edges, vector<pair<int,int>> *edges, vector<int> *vertices_degrees);
+double kruskal(int n_vertices, int n_edges, vector<pair<int,int>> *edges, vector<double> *vertices_lambdas);
 
 #endif

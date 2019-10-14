@@ -10,11 +10,12 @@ bool compare(const pair<int, int>&i, const pair<int, int>&j)
 }
 
 // Calculates edges' weights based on lambda values
-void calc_weights(int n_edges, vector<pair<int,int>> *edges, vector<int> *vertices_lambdas, vector<pair<int,int>> *edges_weights)
+void calc_weights(int n_edges, vector<pair<int,int>> *edges, vector<double> *vertices_lambdas, vector<pair<int,double>> *edges_weights)
 {
 	for(int i = 0; i < n_edges; i++)
 	{
-		int v1, v2, weight;
+		int v1, v2;
+		double weight;
 
 		// Extremities of edge i
 		v1 = (*edges)[i].first;
@@ -22,7 +23,6 @@ void calc_weights(int n_edges, vector<pair<int,int>> *edges, vector<int> *vertic
 
 		// Calculates weight
 		weight = (*vertices_lambdas)[v1] + (*vertices_lambdas)[v2];
-
 		// Creates edge with weight
 		(*edges_weights)[i] = make_pair(i, weight);
 	}
@@ -75,11 +75,11 @@ void make_union(vector<pair<int,int>> *union_roots, int v1, int v2)
 
 
 // Main function of Kruskal's algorithm
-void kruskal(int n_vertices, int n_edges, vector<pair<int,int>> *edges, vector<int> *vertices_lambdas)
+double kruskal(int n_vertices, int n_edges, vector<pair<int,int>> *edges, vector<double> *vertices_lambdas)
 {
 	// Array of edges
 	//First atribute corresponds to edge's index, the second one corresponds to edge's weight
-	vector<pair<int,int>> edges_weights(n_edges);
+	vector<pair<int,double>> edges_weights(n_edges);
 
 	// Array of disjoint sets used on Union Find data structure
 	// For a edge i:
@@ -88,7 +88,8 @@ void kruskal(int n_vertices, int n_edges, vector<pair<int,int>> *edges, vector<i
 
 	// Array of edges' boolean variables
 	vector<bool> edges_variables(n_edges, false);
-	int tree_size, tree_weight, next_edge;
+	int tree_size, next_edge;
+	double tree_weight;
 
 	// Calculate sedges' weights
 	calc_weights(n_edges, edges, vertices_lambdas, &edges_weights);
@@ -124,6 +125,7 @@ void kruskal(int n_vertices, int n_edges, vector<pair<int,int>> *edges, vector<i
 		next_edge++;
 	}
 
+	/*
 	// Print tree
 	for (int i = 0; i < tree_size; ++i)
 	{
@@ -131,5 +133,7 @@ void kruskal(int n_vertices, int n_edges, vector<pair<int,int>> *edges, vector<i
 			cout << (*edges)[i].first << " " << (*edges)[i].second << endl;
 	}
 	cout << tree_weight << endl;
+	*/
 
+	return tree_weight;
 }
