@@ -46,6 +46,46 @@ void set_lambdas(int n_vertices, vector<int> *vertices_degrees, vector<double> *
 	}
 }
 
+double get_rl_primal_value(int n_vertices, double rl1_sol_value, double rl2_sol_value, vector<double> *vertices_lambdas)
+{
+	int rl_sol_value = 0;
+	for (int i = 0; i < n_vertices; i++)
+	{
+		rl_sol_value += (*vertices_lambdas)[i];
+	}
+	rl_sol_value = (-2) * rl_sol_value;
+	rl_sol_value += rl1_sol_value + rl2_sol_value;
+
+	return rl_sol_value;
+}
+
+void subgradient(int n_vertices, int n_edges, vector<int> *vertices_degrees, vector<pair<int,int>> *edges)
+{
+	// Vector of lambdas of langrarian relaxation
+	vector<double> vertices_lambdas(n_vertices);
+	vector<double> subgradients(n_vertices);
+	set_lambdas(n_vertices, vertices_degrees, &vertices_lambdas);
+	int iteration;
+	double rl1_sol_value, rl2_sol_value, rl_sol_value, best_sol_value;
+	best_sol_value = -1;
+
+	for(int iteration = 0; iteration < 10; iteration++)
+	{
+		// Executes Kruskal algorithm for getting a minimum spanning tree for RL1 problem
+		rl1_sol_value = kruskal(n_vertices, n_edges, edges, &vertices_lambdas);
+
+		// Executes inspection algorithm for RL2 problem
+		rl2_sol_value = inspection(n_vertices, vertices_degrees, &vertices_lambdas);
+
+		// Calculates RL solution value
+		rl_sol_value = get_rl_primal_value(n_vertices, rl1_sol_value, rl2_sol_value, &vertices_lambdas);
+		//cout << rl1_sol_value << " " << rl2_sol_value << " " << rl_sol_value << endl;
+
+		best_sol_value = max(best_sol_value, rl_sol_value);
+		//void set_subgradients()
+	}
+}
+
 int main (int argc, char *argv[])
 {
 	// General variables
@@ -53,7 +93,6 @@ int main (int argc, char *argv[])
 	FILE *input_file;
 	FILE *output_file;
 	int n_vertices, n_edges;
-	double rl1_sol_value, rl2_sol_value, rl_sol_value;
 
 	// Opens input and output files
 	input_path = argv[1];
@@ -67,26 +106,8 @@ int main (int argc, char *argv[])
 	vector<int> vertices_degrees (n_vertices, 0); // Array vertices degrees
 	load_edges(input_file, n_edges, &edges, &vertices_degrees);
 
-	// Vector of lambdas of langrarian relaxation
-	vector<double> vertices_lambdas(n_vertices);
-	set_lambdas(n_vertices, &vertices_degrees, &vertices_lambdas);
-
-	// Executes Kruskal algorithm for getting a minimum spanning tree for RL1 problem
-	rl1_sol_value = kruskal(n_vertices, n_edges, &edges, &vertices_lambdas);
-
-	// Executes inspection algorithm for RL2 problem
-	rl2_sol_value = inspection(n_vertices, &vertices_degrees, &vertices_lambdas);
-
-	// Calculates RL solution value
-	rl_sol_value = 0;
-	for (int i = 0; i < n_vertices; i++)
-	{
-		rl_sol_value += vertices_lambdas[i];
-	}
-	rl_sol_value = (-2) * rl_sol_value;
-	rl_sol_value += rl1_sol_value + rl2_sol_value;
-
-	cout << rl1_sol_value << " " << rl2_sol_value << " " << rl_sol_value << endl;
+	//Executes subgradient algorithm
+	subgradient(n_vertices, n_edges, &vertices_degrees, &edges);
 
 	// Closes input and output files
 	fclose(input_file);
