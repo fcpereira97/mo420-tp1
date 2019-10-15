@@ -64,6 +64,9 @@ void subgradient(int n_vertices, int n_edges, vector<int> *vertices_degrees, vec
 	// Vector of lambdas of langrarian relaxation
 	vector<double> vertices_lambdas(n_vertices);
 	vector<double> subgradients(n_vertices);
+	vector<bool> edges_variables(n_edges, false);
+	vector<bool> vertices_variables(n_vertices, false);
+
 	set_lambdas(n_vertices, vertices_degrees, &vertices_lambdas);
 	int iteration;
 	double rl1_sol_value, rl2_sol_value, rl_sol_value, best_sol_value;
@@ -72,14 +75,14 @@ void subgradient(int n_vertices, int n_edges, vector<int> *vertices_degrees, vec
 	for(int iteration = 0; iteration < 10; iteration++)
 	{
 		// Executes Kruskal algorithm for getting a minimum spanning tree for RL1 problem
-		rl1_sol_value = kruskal(n_vertices, n_edges, edges, &vertices_lambdas);
+		rl1_sol_value = kruskal(n_vertices, n_edges, edges, &vertices_lambdas, &edges_variables);
 
 		// Executes inspection algorithm for RL2 problem
-		rl2_sol_value = inspection(n_vertices, vertices_degrees, &vertices_lambdas);
+		rl2_sol_value = inspection(n_vertices, vertices_degrees, &vertices_lambdas, &vertices_variables);
 
 		// Calculates RL solution value
 		rl_sol_value = get_rl_primal_value(n_vertices, rl1_sol_value, rl2_sol_value, &vertices_lambdas);
-		//cout << rl1_sol_value << " " << rl2_sol_value << " " << rl_sol_value << endl;
+		cout << rl1_sol_value << " " << rl2_sol_value << " " << rl_sol_value << endl;
 
 		best_sol_value = max(best_sol_value, rl_sol_value);
 		//void set_subgradients()

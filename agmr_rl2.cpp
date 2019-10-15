@@ -4,10 +4,9 @@
 using namespace std;
 
 // Inspects variables by evaluating costs of RL2
-double inspection(int n_vertices, vector<int> *vertices_degrees, vector<double> *vertices_lambdas)
+double inspection(int n_vertices, vector<int> *vertices_degrees, vector<double> *vertices_lambdas, vector<bool> *vertices_variables)
 {
 	// Array of vertices' boolean variables
-	vector<bool> vertices_variables(n_vertices, false);
 	double sol_value = 0;
 
 	for (int i = 0; i < n_vertices; i++)
@@ -16,7 +15,7 @@ double inspection(int n_vertices, vector<int> *vertices_degrees, vector<double> 
 		double cost = 1.0 - ((*vertices_degrees)[i] * (*vertices_lambdas)[i]);
 		if(cost < 0)
 		{
-			vertices_variables[i] = true;
+			(*vertices_variables)[i] = true;
 			sol_value += cost;
 		}
 	}
