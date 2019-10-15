@@ -24,7 +24,7 @@ void load_edges(FILE* input_file, int n_edges, vector<pair<int,int>> *edges, vec
 }
 
 // Sets the initial values of lambdas variables
-void set_lambdas(int n_vertices, vector<int> *vertices_degrees, vector<double> *vertices_lambdas)
+void set_initial_lambdas(int n_vertices, vector<int> *vertices_degrees, vector<double> *vertices_lambdas)
 {
 	int max_degree = 0;
 
@@ -46,6 +46,28 @@ void set_lambdas(int n_vertices, vector<int> *vertices_degrees, vector<double> *
 	}
 }
 
+
+// Sets the initial values of lambdas variables
+void set_lambdas(int n_vertices, double step_size, vector<int> *vertices_degrees, vector<double> *vertices_lambdas,
+	vector<double> *subgradients)
+{
+	for(int i = 0; i < n_vertices; i++)
+	{
+		double cost = (*vertices_lambdas)[i] + step_size * (*subgradients)[i];
+		if(cost < 0)
+		{
+			(*vertices_lambdas)[i] = 0;
+		}
+		else if (cost > 0 && cost < 1.0/(double)(*vertices_degrees)[i])
+		{
+			(*vertices_lambdas)[i] = cost;
+		}
+		else
+		{
+			(*vertices_lambdas)[i] = 1.0/(double)(*vertices_degrees)[i];
+		}
+	}
+}
 double get_rl_primal_value(int n_vertices, double rl1_sol_value, double rl2_sol_value, vector<double> *vertices_lambdas)
 {
 	int rl_sol_value = 0;
@@ -59,6 +81,55 @@ double get_rl_primal_value(int n_vertices, double rl1_sol_value, double rl2_sol_
 	return rl_sol_value;
 }
 
+void calc_subgradients(int n_vertices, int n_edges, vector<int> *vertices_degrees, vector<pair<int,int>> *edges,
+	vector<double> *vertices_lambdas, vector<double> *subgradients, vector<bool> *edges_variables,
+	vector<bool> *vertices_variables)
+{
+	for(int i = 0; i < n_vertices; i++)
+	{
+		(*subgradients)[i] = (-2) * ( (*vertices_degrees)[i] * (*vertices_variables)[i] * (*vertices_lambdas)[i]);
+	}
+
+	for(int i = 0; i < n_edges; i++)
+	{
+		int v1, v2;
+
+		v1 = (*edges)[i].first;
+		v2 = (*edges)[i].second;
+
+		(*subgradients)[v1] = (*edges_variables)[v2] *  (*vertices_lambdas)[v1];
+		(*subgradients)[v2] = (*edges_variables)[v1] *  (*vertices_lambdas)[v2];
+	}
+}
+
+double calc_step_size(int n_vertices, double best_sol_value, double rl_sol_value,
+	vector<double> *vertices_lambdas, vector<double> *subgradients)
+{
+	double epsilon, numerator, denominator, step_size;
+
+	epsilon = 1;
+	numerator = best_sol_value - rl_sol_value;
+	if(best_sol_value - rl_sol_value != 0)
+	{
+		denominator = 0;
+		for(int i = 0; i < n_vertices; i++)
+		denominator += pow(abs((*subgradients)[i]), 2);
+
+		denominator = sqrt(denominator);
+		denominator = pow(denominator, 2);
+
+		step_size = epsilon * (numerator/denominator);
+	}
+	else
+	{
+		step_size = 0;
+	}
+
+	//cout << step_size << endl;
+	return step_size;
+
+}
+
 void subgradient(int n_vertices, int n_edges, vector<int> *vertices_degrees, vector<pair<int,int>> *edges)
 {
 	// Vector of lambdas of langrarian relaxation
@@ -66,10 +137,10 @@ void subgradient(int n_vertices, int n_edges, vector<int> *vertices_degrees, vec
 	vector<double> subgradients(n_vertices);
 	vector<bool> edges_variables(n_edges, false);
 	vector<bool> vertices_variables(n_vertices, false);
-
-	set_lambdas(n_vertices, vertices_degrees, &vertices_lambdas);
 	int iteration;
-	double rl1_sol_value, rl2_sol_value, rl_sol_value, best_sol_value;
+	double rl1_sol_value, rl2_sol_value, rl_sol_value, best_sol_value, step_size;
+
+	set_initial_lambdas(n_vertices, vertices_degrees, &vertices_lambdas);
 	best_sol_value = -1;
 
 	for(int iteration = 0; iteration < 10; iteration++)
@@ -82,10 +153,17 @@ void subgradient(int n_vertices, int n_edges, vector<int> *vertices_degrees, vec
 
 		// Calculates RL solution value
 		rl_sol_value = get_rl_primal_value(n_vertices, rl1_sol_value, rl2_sol_value, &vertices_lambdas);
+		
 		cout << rl1_sol_value << " " << rl2_sol_value << " " << rl_sol_value << endl;
 
+		calc_subgradients(n_vertices, n_edges, vertices_degrees, edges, &vertices_lambdas,
+		&subgradients, &edges_variables, &vertices_variables);
+
+		step_size = calc_step_size(n_vertices, best_sol_value, rl_sol_value, &vertices_lambdas, &subgradients);
+
+		set_lambdas(n_vertices, step_size, vertices_degrees, &vertices_lambdas, &subgradients);
+
 		best_sol_value = max(best_sol_value, rl_sol_value);
-		//void set_subgradients()
 	}
 }
 
