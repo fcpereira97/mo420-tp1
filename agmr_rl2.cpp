@@ -12,8 +12,8 @@ double inspection(int n_vertices, vector<int> *vertices_degrees, vector<double> 
 	for (int i = 0; i < n_vertices; i++)
 	{
 		// If cost is less than 0, then y_i is assigned with 1 value, else with 0 value
-		double cost = 1.0 - ((*vertices_degrees)[i] * (*vertices_lambdas)[i]);
-		if(cost < 0)
+		double cost = 1.0 - (double)((*vertices_degrees)[i] * (*vertices_lambdas)[i]);
+		if(cost <= 0)
 		{
 			(*vertices_variables)[i] = true;
 			sol_value += cost;
