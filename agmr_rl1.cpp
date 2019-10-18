@@ -4,7 +4,7 @@
 using namespace std;
 
 // Compare function used to sort edges by weights
-bool compare(const pair<int, int>&i, const pair<int, int>&j)
+bool compare(const pair<int, double>&i, const pair<int, double>&j)
 {
     return i.second < j.second;
 }
@@ -23,6 +23,7 @@ void calc_weights(int n_edges, vector<pair<int,int>> *edges, vector<double> *ver
 
 		// Calculates weight
 		weight = (*vertices_lambdas)[v1] + (*vertices_lambdas)[v2];
+
 		// Creates edge with weight
 		(*edges_weights)[i] = make_pair(i, weight);
 	}
@@ -75,7 +76,7 @@ void make_union(vector<pair<int,int>> *union_roots, int v1, int v2)
 
 
 // Main function of Kruskal's algorithm
-double kruskal(int n_vertices, int n_edges, vector<int> *vertices_degrees, vector<pair<int,int>> *edges, vector<double> *vertices_lambdas, vector<bool> *edges_variables)
+double kruskal(int n_vertices, int n_edges, vector<pair<int,int>> *edges, vector<double> *vertices_lambdas, vector<bool> *edges_variables)
 {
 	// Array of edges
 	//First atribute corresponds to edge's index, the second one corresponds to edge's weight
@@ -87,7 +88,9 @@ double kruskal(int n_vertices, int n_edges, vector<int> *vertices_degrees, vecto
 	vector<pair<int, int>> union_roots(n_vertices);
 
 	// Array of edges' boolean variables
-	int tree_size, next_edge;
+	int tree_size, current_edge;
+
+	// Weight of minimum spanning tree
 	double tree_weight;
 
 	// Calculate sedges' weights
@@ -102,37 +105,27 @@ double kruskal(int n_vertices, int n_edges, vector<int> *vertices_degrees, vecto
 	// Initializes Kruskal' Algorithm variables
 	tree_size = 0;
 	tree_weight = 0;
-	next_edge = 0;
-	while(tree_size < n_vertices - 1 && next_edge < n_edges) 
+	current_edge = 0;
+	while(tree_size < n_vertices - 1 && current_edge < n_edges) 
 	{
-		int edge, v1, v2;
-		edge = edges_weights[next_edge].first; // Selects the edge with less weight
-		v1 = (*edges)[edge].first;
-		v2 = (*edges)[edge].second;
+		int edge_index, v1, v2;
+		edge_index = edges_weights[current_edge].first; // Selects the edge with less weight
+		v1 = (*edges)[edge_index].first;
+		v2 = (*edges)[edge_index].second;
 
 		// Checks whether edge extremities belong to distinct sets 
 		// If so, then select the edge will result in a cycle!
 		// If not, the edge can be added to the tree
-		if((*vertices_degrees)[v1] > 2 && (*vertices_degrees)[v2] > 2 && !check_sets(&union_roots, v1, v2)) 
+		if(!check_sets(&union_roots, v1, v2)) 
 		{
 			make_union(&union_roots, v1, v2); // Makes union of disjoint sets conected by the edge
 			// Updates variables
-			(*edges_variables)[edge] = true;
+			(*edges_variables)[edge_index] = true;
 			tree_size++;
-			tree_weight += edges_weights[next_edge].second;
+			tree_weight += edges_weights[current_edge].second;
 		}
-		next_edge++;
+		current_edge++;
 	}
-
-	/*
-	// Print tree
-	for (int i = 0; i < tree_size; ++i)
-	{
-		if(edges_variables[i])
-			cout << (*edges)[i].first << " " << (*edges)[i].second << endl;
-	}
-	cout << tree_weight << endl;
-	*/
-
+	
 	return tree_weight;
 }
