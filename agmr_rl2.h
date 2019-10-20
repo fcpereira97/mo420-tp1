@@ -1,7 +1,8 @@
 #ifndef AGMR_RL2_H
 #define AGMR_RL2_H
 
+#include "mystruct.h"
 using namespace std;
 
-double inspection(int n_vertices, vector<int> *vertices_degrees, vector<double> *vertices_lambdas, vector<bool> *vertices_variables);
+double inspection(int n_vertices, vector<Vertex*> *vertices, vector<bool> *vertices_variables);
 #endif

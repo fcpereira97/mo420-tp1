@@ -1,31 +1,29 @@
 #include <bits/stdc++.h>
 #include "agmr_rl1.h"
+#include "mystruct.h"
 
 using namespace std;
 
 // Compare function used to sort edges by weights
-bool compare(const pair<int, double>&i, const pair<int, double>&j)
+bool compare(Edge *e_1, Edge *e_2)
 {
-    return i.second < j.second;
+    return e_1-> weight  < e_2-> weight;
 }
 
 // Calculates edges' weights based on lambda values
-void calc_weights(int n_edges, vector<pair<int,int>> *edges, vector<double> *vertices_lambdas, vector<pair<int,double>> *edges_weights)
+void calc_weights(int n_edges, vector<Edge*> *edges, vector<Vertex*> *vertices)
 {
 	for(int i = 0; i < n_edges; i++)
 	{
-		int v1, v2;
+		Vertex *v1, *v2;
 		double weight;
 
 		// Extremities of edge i
-		v1 = (*edges)[i].first;
-		v2 = (*edges)[i].second;
+		v1 = (*edges)[i]-> vertex_1;
+		v2 = (*edges)[i]-> vertex_2;
 
 		// Calculates weight
-		weight = (*vertices_lambdas)[v1] + (*vertices_lambdas)[v2];
-
-		// Creates edge with weight
-		(*edges_weights)[i] = make_pair(i, weight);
+		(*edges)[i]-> weight = v1 -> lambda + v2-> lambda;
 	}
 }
 
@@ -74,13 +72,9 @@ void make_union(vector<pair<int,int>> *union_roots, int v1, int v2)
 	}
 }
 
-
 // Main function of Kruskal's algorithm
-double kruskal(int n_vertices, int n_edges, vector<pair<int,int>> *edges, vector<double> *vertices_lambdas, vector<bool> *edges_variables)
+double kruskal(int n_vertices, int n_edges, vector<Vertex*> *vertices, vector<Edge*> *edges, vector<bool> *edges_variables)
 {
-	// Array of edges
-	//First atribute corresponds to edge's index, the second one corresponds to edge's weight
-	vector<pair<int,double>> edges_weights(n_edges);
 
 	// Array of disjoint sets used on Union Find data structure
 	// For a edge i:
@@ -94,35 +88,38 @@ double kruskal(int n_vertices, int n_edges, vector<pair<int,int>> *edges, vector
 	double tree_weight;
 
 	// Calculate sedges' weights
-	calc_weights(n_edges, edges, vertices_lambdas, &edges_weights);
+	calc_weights(n_edges, edges, vertices);
 
 	// Sorts edges ascending by weights
-	sort(edges_weights.begin(), edges_weights.end(), compare);
-
+	sort((*edges).begin(), (*edges).end(), compare);
+	
 	// Initializes Union Find
 	initialize_union_roots(n_vertices, &union_roots);
 
+	
 	// Initializes Kruskal' Algorithm variables
 	tree_size = 0;
 	tree_weight = 0;
 	current_edge = 0;
+
+
 	while(tree_size < n_vertices - 1 && current_edge < n_edges) 
 	{
-		int edge_index, v1, v2;
-		edge_index = edges_weights[current_edge].first; // Selects the edge with less weight
-		v1 = (*edges)[edge_index].first;
-		v2 = (*edges)[edge_index].second;
+		Vertex *v1, *v2;
+		// Selects the edge with less weight
+		v1 = (*edges)[current_edge]-> vertex_1;
+		v2 = (*edges)[current_edge]-> vertex_2;
 
 		// Checks whether edge extremities belong to distinct sets 
 		// If so, then select the edge will result in a cycle!
 		// If not, the edge can be added to the tree
-		if(!check_sets(&union_roots, v1, v2)) 
+		if(!check_sets(&union_roots, v1-> index , v2-> index)) 
 		{
-			make_union(&union_roots, v1, v2); // Makes union of disjoint sets conected by the edge
+			make_union(&union_roots, v1-> index, v2-> index); // Makes union of disjoint sets conected by the edge
 			// Updates variables
-			(*edges_variables)[edge_index] = true;
+			(*edges_variables)[(*edges)[current_edge]-> index] = true;
 			tree_size++;
-			tree_weight += edges_weights[current_edge].second;
+			tree_weight += (*edges)[current_edge]-> weight;
 		}
 		current_edge++;
 	}
