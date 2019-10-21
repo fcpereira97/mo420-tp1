@@ -3,17 +3,19 @@
 
 using namespace std;
 
+typedef struct Edge Edge;
+typedef struct Vertex Vertex;
+
 struct Vertex
 {
 	int index;
 	int degree;
+	int ramifications;
 	double lambda;
 	bool visited;
 	bool variable;
-	list<Vertex*> neighbors;
+	list<Edge*> incident_edges;
 };
-
-typedef struct Vertex Vertex;
 
 struct Edge
 {
@@ -23,7 +25,7 @@ struct Edge
 	Vertex *vertex_1, *vertex_2;
 };
 
-typedef struct Edge Edge;
+
 
 
 #endif

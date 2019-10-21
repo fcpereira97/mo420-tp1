@@ -35,9 +35,6 @@ void load_graph (FILE* input_file, int n_vertices, int n_edges, vector<Vertex*> 
 
 		(*vertices)[v1-1]-> degree++;
 		(*vertices)[v2-1]-> degree++;
-
-		(*vertices)[v1-1]-> neighbors.push_back((*vertices)[v2-1]);
-		(*vertices)[v2-1]-> neighbors.push_back((*vertices)[v1-1]);
 	}
 }
 
