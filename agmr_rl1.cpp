@@ -73,7 +73,7 @@ void make_union(vector<pair<int,int>> *union_roots, int v1, int v2)
 }
 
 // Main function of Kruskal's algorithm
-double kruskal(int n_vertices, int n_edges, vector<Vertex*> *vertices, vector<Edge*> *edges, vector<bool> *edges_variables)
+double kruskal(int n_vertices, int n_edges, vector<Vertex*> *vertices, vector<Edge*> *edges)
 {
 
 	// Array of disjoint sets used on Union Find data structure
@@ -117,7 +117,7 @@ double kruskal(int n_vertices, int n_edges, vector<Vertex*> *vertices, vector<Ed
 		{
 			make_union(&union_roots, v1-> index, v2-> index); // Makes union of disjoint sets conected by the edge
 			// Updates variables
-			(*edges_variables)[(*edges)[current_edge]-> index] = true;
+			(*edges)[current_edge]-> variable = true;
 			tree_size++;
 			tree_weight += (*edges)[current_edge]-> weight;
 		}

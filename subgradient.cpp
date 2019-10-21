@@ -55,7 +55,7 @@ void set_lambdas(int n_vertices, double step_size, vector<Vertex*> *vertices, ve
 	}
 }
 
-double get_rl_primal_value(int n_vertices, vector<Vertex*> *vertices, double rl1_value, double rl2_value)
+double get_lower_bound(int n_vertices, vector<Vertex*> *vertices, double rl1_value, double rl2_value)
 {
 	double current_lower_bound = 0;
 	for (int i = 0; i < n_vertices; i++)
@@ -69,13 +69,13 @@ double get_rl_primal_value(int n_vertices, vector<Vertex*> *vertices, double rl1
 }
 
 void calc_subgradient(int n_vertices, int n_edges, vector<Vertex*> *vertices, vector<Edge*> *edges,
-	vector<int> *subgradient, vector<bool> *edges_variables, vector<bool> *vertices_variables)
+	vector<int> *subgradient)
 {
 	for(int i = 0; i < n_vertices; i++)
 	{
 		if((*vertices)[i]-> degree > 2)
 		{
-			(*subgradient)[i] += - 2 - (*vertices)[i]-> degree * (*vertices_variables)[i];
+			(*subgradient)[i] += - 2 - (*vertices)[i]-> degree * (*vertices)[i]-> variable;
 		}
 	}
 
@@ -88,12 +88,12 @@ void calc_subgradient(int n_vertices, int n_edges, vector<Vertex*> *vertices, ve
 
 		if(v1->degree > 2)
 		{
-			(*subgradient)[v1-> index] += (*edges_variables)[i];
+			(*subgradient)[v1-> index] += (*edges)[i]-> variable;
 		}
 
 		if(v1->degree > 2)
 		{
-			(*subgradient)[v2-> index] += (*edges_variables)[i];
+			(*subgradient)[v2-> index] += (*edges)[i]-> variable;
 		}
 	}
 }
@@ -121,8 +121,6 @@ void subgradient(int n_vertices, int n_edges, vector<Vertex*> *vertices, vector<
 	// Vector of lambdas of langrarian relaxation
 
 	vector<int> subgradient_vector(n_vertices);
-	vector<bool> edges_variables(n_edges, false);
-	vector<bool> vertices_variables(n_vertices, false);
 	int iteration, current_upper_bound, best_upper_bound;
 	double rl1_value, rl2_value, current_lower_bound, best_lower_bound, step_size;
 	
@@ -130,23 +128,28 @@ void subgradient(int n_vertices, int n_edges, vector<Vertex*> *vertices, vector<
 	best_lower_bound = numeric_limits<double>::min();
 	best_upper_bound = numeric_limits<int>::max();
 	
-	
 	for(int iteration = 0; iteration < 10; iteration++)
 	{
 
 		// Executes Kruskal algorithm for getting a minimum spanning tree for RL1 problem
-		fill(edges_variables.begin(), edges_variables.end(), false);
-		rl1_value = kruskal(n_vertices, n_edges, vertices, edges, &edges_variables);
+		for(int i = 0; i < n_edges; i++)
+		{
+			(*edges)[i]-> variable = false;
+		}
+		rl1_value = kruskal(n_vertices, n_edges, vertices, edges);
 		
 		// Executes inspection algorithm for RL2 problem
-		fill(vertices_variables.begin(), vertices_variables.end(), false);
-		rl2_value = inspection(n_vertices, vertices, &vertices_variables);
+		for(int i = 0; i < n_vertices; i++)
+		{
+			(*vertices)[i]-> variable = false;
+		}
+		rl2_value = inspection(n_vertices, vertices);
 		
 		// Calculates RL solution value
-		current_lower_bound = get_rl_primal_value(n_vertices, vertices, rl1_value, rl2_value);
+		current_lower_bound = get_lower_bound(n_vertices, vertices, rl1_value, rl2_value);
 		
 		fill(subgradient_vector.begin(), subgradient_vector.end(), 0);
-		calc_subgradient(n_vertices, n_edges, vertices, edges, &subgradient_vector, &edges_variables, &vertices_variables);
+		calc_subgradient(n_vertices, n_edges, vertices, edges, &subgradient_vector);
 		
 		step_size = calc_step_size(n_vertices, current_lower_bound, &subgradient_vector);
 		

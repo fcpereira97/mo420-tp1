@@ -9,6 +9,7 @@ struct Vertex
 	int degree;
 	double lambda;
 	bool visited;
+	bool variable;
 	list<Vertex*> neighbors;
 };
 
@@ -17,8 +18,9 @@ typedef struct Vertex Vertex;
 struct Edge
 {
 	int index;
-	Vertex *vertex_1, *vertex_2;
 	double weight;
+	bool variable;
+	Vertex *vertex_1, *vertex_2;
 };
 
 typedef struct Edge Edge;

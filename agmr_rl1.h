@@ -5,6 +5,6 @@
 
 using namespace std;
 
-double kruskal(int n_vertices, int n_edges, vector<Vertex*> *vertices, vector<Edge*> *edges, vector<bool> *edges_variables);
+double kruskal(int n_vertices, int n_edges, vector<Vertex*> *vertices, vector<Edge*> *edges);
 
 #endif

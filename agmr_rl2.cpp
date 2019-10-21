@@ -5,7 +5,7 @@
 using namespace std;
 
 // Inspects variables by evaluating costs of RL2
-double inspection(int n_vertices, vector<Vertex*> *vertices, vector<bool> *vertices_variables)
+double inspection(int n_vertices, vector<Vertex*> *vertices)
 {
 	// Value of rl2 problem
 	
@@ -17,7 +17,7 @@ double inspection(int n_vertices, vector<Vertex*> *vertices, vector<bool> *verti
 		double cost = 1.0 - (double)(*vertices)[i]-> degree * (*vertices)[i]-> lambda;
 		if(cost <= 0)
 		{
-			(*vertices_variables)[i] = true;
+			(*vertices)[i]-> variable = true;
 			rl2_value += cost;	
 		}
 	}
