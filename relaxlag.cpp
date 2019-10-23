@@ -1,6 +1,7 @@
 #include <bits/stdc++.h>
 #include "subgradient.h"
 #include "heuristic.h"
+#include "preprocessing.h"
 #include "mystruct.h"
 
 using namespace std;
@@ -22,6 +23,7 @@ void load_graph (FILE* input_file, int n_vertices, int n_edges, vector<Vertex*> 
 
 		(*vertices)[i]-> index = i;
 		(*vertices)[i]-> degree = 0;
+		(*vertices)[i]-> fixed = false;
 	}
 
 	for(int i = 0; i < n_edges; i++) 
@@ -29,6 +31,7 @@ void load_graph (FILE* input_file, int n_vertices, int n_edges, vector<Vertex*> 
 		fscanf(input_file, "%d %d", &v1, &v2);
 		(*edges)[i] = new Edge;
 
+		(*edges)[i]-> fixed = false;
 		(*edges)[i]-> index = i;
 		(*edges)[i]-> vertex_1 = (*vertices)[v1-1];
 		(*edges)[i]-> vertex_2 = (*vertices)[v2-1];
@@ -58,6 +61,8 @@ int main (int argc, char *argv[])
 	vector<Vertex*> vertices(n_vertices);
 	vector<Edge*> edges(n_edges);
 	load_graph(input_file, n_vertices, n_edges, &vertices, &edges);
+
+	preprocessing(n_vertices, n_edges, &vertices, &edges);
 
 	//Executes subgradient algorithm
 	subgradient(n_vertices, n_edges, &vertices, &edges);

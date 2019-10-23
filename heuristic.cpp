@@ -20,8 +20,11 @@ void erase_visitation(int n_vertices, vector<Vertex*> *vertices)
 	}
 }
 
-void calc_ramifications(int n_edges, vector<Edge*> *edges)
+void calc_ramifications(int n_vertices, int n_edges, vector<Vertex*> *vertices, vector<Edge*> *edges)
 {
+	for(int i = 0; i < n_vertices; i++)
+		(*vertices)[i]-> ramifications = 0;
+
 	for(int i = 0; i < n_edges; i++)
 	{
 		if((*edges)[i]-> variable)
@@ -36,7 +39,7 @@ void calc_ramifications(int n_edges, vector<Edge*> *edges)
 	}
 }
 
-void corect_vertices_variables(int n_vertices, vector<Vertex*> *vertices)
+void correct_vertices_variables(int n_vertices, vector<Vertex*> *vertices)
 {
 	for(int i = 0; i < n_vertices; i++)
 	{
@@ -113,9 +116,10 @@ bool improvement_1(list<Edge*> *available_edges)
 		if(v1-> ramifications != 2 && v2->ramifications != 2)
 		{
 			list<Edge*> path;
-			find_path(v1, v2, &path);
-			Edge *out_edge = NULL;
 
+			find_path(v1, v2, &path);
+
+			Edge *out_edge = NULL;
 			for (list<Edge*>::iterator candidate_out_edge = path.begin(); candidate_out_edge != path.end(); ++candidate_out_edge)
 			{
 				if((*candidate_out_edge)-> vertex_1 -> ramifications == 3 &&
@@ -221,10 +225,10 @@ int heuristic(int n_vertices, int n_edges, vector<Vertex*> *vertices, vector<Edg
 	int upper_bound = 0;
 
 	// Calculates ramifications on tree
-	calc_ramifications(n_edges, edges);
+	calc_ramifications(n_vertices, n_edges, vertices, edges);
 
 	// Corrects vertices variables
-	corect_vertices_variables(n_vertices, vertices);
+	correct_vertices_variables(n_vertices, vertices);
 
 	erase_incident_edges(n_vertices, vertices);
 

@@ -10,6 +10,13 @@ bool compare(Edge *e_1, Edge *e_2)
     return e_1-> weight  < e_2-> weight;
 }
 
+void erase_variables(int n_edges, vector<Edge*> *edges)
+{
+	for(int i = 0; i < n_edges; i++)
+		if(!(*edges)[i]-> fixed)
+			(*edges)[i]-> variable = false;
+}
+
 // Calculates edges' weights based on lambda values
 void calc_weights(int n_edges, vector<Edge*> *edges, vector<Vertex*> *vertices)
 {
@@ -87,6 +94,8 @@ double kruskal(int n_vertices, int n_edges, vector<Vertex*> *vertices, vector<Ed
 	// Weight of minimum spanning tree
 	double tree_weight;
 
+	erase_variables(n_edges, edges);
+
 	// Calculate sedges' weights
 	calc_weights(n_edges, edges, vertices);
 
@@ -102,6 +111,15 @@ double kruskal(int n_vertices, int n_edges, vector<Vertex*> *vertices, vector<Ed
 	tree_weight = 0;
 	current_edge = 0;
 
+	for(int i = 0; i < n_edges; i++)
+	{
+		if((*edges)[i] -> fixed)
+		{
+			make_union(&union_roots, (*edges)[i]-> vertex_1-> index, (*edges)[i]-> vertex_2-> index);
+			tree_size++;
+			tree_weight += (*edges)[i]-> weight;
+		}
+	}
 
 	while(tree_size < n_vertices - 1 && current_edge < n_edges) 
 	{
@@ -113,7 +131,7 @@ double kruskal(int n_vertices, int n_edges, vector<Vertex*> *vertices, vector<Ed
 		// Checks whether edge extremities belong to distinct sets 
 		// If so, then select the edge will result in a cycle!
 		// If not, the edge can be added to the tree
-		if(!check_sets(&union_roots, v1-> index , v2-> index)) 
+		if(!(*edges)[current_edge]-> fixed && !check_sets(&union_roots, v1-> index , v2-> index)) 
 		{
 			make_union(&union_roots, v1-> index, v2-> index); // Makes union of disjoint sets conected by the edge
 			// Updates variables
@@ -124,5 +142,5 @@ double kruskal(int n_vertices, int n_edges, vector<Vertex*> *vertices, vector<Ed
 		current_edge++;
 	}
 	
-	return tree_weight;
+		return tree_weight;
 }
