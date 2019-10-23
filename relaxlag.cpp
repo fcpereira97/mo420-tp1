@@ -69,6 +69,12 @@ int main (int argc, char *argv[])
 	vector<Edge*> edges(n_edges);
 	load_graph(input_file, n_vertices, n_edges, &vertices, &edges);
 
+	// Prints extra information
+	FILE* extra_print;
+	extra_print = fopen("results.csv", "a");
+	fprintf(extra_print, "%s, ", input_path.c_str());
+	fclose(extra_print);
+	
 	// Executes preprocessing algorithm
 	preprocessing(n_vertices, n_edges, &vertices, &edges);
 
@@ -78,6 +84,7 @@ int main (int argc, char *argv[])
 	// Closes input and output files
 	fclose(input_file);
 	fclose(output_file);
+
 
 	return 0;
 }

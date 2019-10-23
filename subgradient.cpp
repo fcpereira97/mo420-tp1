@@ -157,23 +157,26 @@ double calc_step_size(int n_vertices, double current_lower_bound, int best_upper
 
 // Updates the best lower bound value
 void update_best_lower_bound(int iteration, int *iteration_best_lower_bound,
-	double *best_lower_bound, double current_lower_bound)
+	double *best_lower_bound, double current_lower_bound, int *time_best_lower_bound, int time_current)
 {
 	if(*best_lower_bound < current_lower_bound)
 	{
 		*iteration_best_lower_bound = iteration;
+		*time_best_lower_bound = time_current;
 	}
 
 	*best_lower_bound = max(*best_lower_bound, current_lower_bound);	
 }
 
 // Updates the best upper bound value and solution
-void update_best_upper_bound(int n_edges, int iteration, int *iteration_best_upper_bound, 
-	int *best_upper_bound, int current_upper_bound, vector<pair<int,int>> *best_upper_bound_solution, vector<Edge*> *edges)
+void update_best_upper_bound(int n_edges, int iteration, int *iteration_best_upper_bound, int *best_upper_bound, 
+	int current_upper_bound, vector<pair<int,int>> *best_upper_bound_solution, vector<Edge*> *edges,
+	int *time_best_upper_bound, int time_current)
 {
 	if(*best_upper_bound > current_upper_bound)
 	{
 		*iteration_best_upper_bound = iteration;
+		*time_best_upper_bound = time_current;
 		int j = 0;
 
 		for(int i = 0; i < n_edges; i++)
@@ -250,6 +253,16 @@ void print_result(int n_vertices, double best_lower_bound, int iteration_best_lo
 	}
 }
 
+void print_extra_result(double best_lower_bound, int iteration_best_lower_bound, int time_best_lower_bound,
+	int best_upper_bound, int iteration_best_upper_bound, int time_best_upper_bound, int total_iteration,
+	int total_time, bool opt_by_gap_flag, bool opt_by_sol_flag, FILE* output_file)
+{
+	fprintf(output_file, "%.5lf, %d, %d, %d, %d, %d, %d, %d, %d, %d\n",
+		best_lower_bound, iteration_best_lower_bound, time_best_lower_bound,
+		best_upper_bound, iteration_best_upper_bound, time_best_upper_bound,
+		total_iteration, total_time, opt_by_gap_flag, opt_by_sol_flag);
+}
+
 //Subgradient algorithm
 void subgradient(int n_vertices, int n_edges, vector<Vertex*> *vertices, vector<Edge*> *edges,
 	time_t time_start, int time_limit, FILE* output_file)
@@ -257,7 +270,8 @@ void subgradient(int n_vertices, int n_edges, vector<Vertex*> *vertices, vector<
 	//General variables
 	vector<int> subgradient_vector(n_vertices);
 	vector<pair<int,int>> best_upper_bound_solution(n_vertices-1);
-	int iteration, current_upper_bound, best_upper_bound, iteration_best_upper_bound, iteration_best_lower_bound;
+	int iteration, current_upper_bound, best_upper_bound, iteration_best_upper_bound, iteration_best_lower_bound,
+		time_best_upper_bound, time_best_lower_bound;
 	double rl1_value, rl2_value, current_lower_bound, best_lower_bound, step_size;
 	bool opt_by_gap_flag, opt_by_sol_flag;
 	time_t time_current;
@@ -284,8 +298,9 @@ void subgradient(int n_vertices, int n_edges, vector<Vertex*> *vertices, vector<
 		current_upper_bound = calc_sol_value(n_vertices, n_edges, vertices, edges);
 
 		// Updates best upper bound
+		time_current = time (NULL);
 		update_best_upper_bound(n_edges, iteration, &iteration_best_upper_bound, &best_upper_bound,
-			current_upper_bound, &best_upper_bound_solution, edges);
+			current_upper_bound, &best_upper_bound_solution, edges, &time_best_upper_bound, time_current - time_start);
 
 		// Executes inspection algorithm for RL2 problem
 		rl2_value = inspection(n_vertices, vertices);
@@ -299,7 +314,9 @@ void subgradient(int n_vertices, int n_edges, vector<Vertex*> *vertices, vector<
 			break;
 
 		// Updates best lower bound
-		update_best_lower_bound(iteration, &iteration_best_lower_bound, &best_lower_bound, current_lower_bound);
+		time_current = time (NULL);
+		update_best_lower_bound(iteration, &iteration_best_lower_bound, &best_lower_bound, current_lower_bound,
+			&time_best_lower_bound, time_current - time_start);
 
 		// Calculates subgradient vector
 		calc_subgradient(n_vertices, n_edges, vertices, edges, &subgradient_vector);
@@ -308,8 +325,10 @@ void subgradient(int n_vertices, int n_edges, vector<Vertex*> *vertices, vector<
 		current_upper_bound = heuristic(n_vertices, n_edges, vertices, edges);
 
 		// Updates best upper bound
+		time_current = time (NULL);
 		update_best_upper_bound(n_edges, iteration, &iteration_best_upper_bound, &best_upper_bound,
-			current_upper_bound, &best_upper_bound_solution, edges);
+			current_upper_bound, &best_upper_bound_solution, edges, &time_best_upper_bound, time_current - time_start);
+
 
 		// Checks for optimality by gap
 		opt_by_gap_flag = check_opt_by_gap(best_upper_bound, best_lower_bound);
@@ -326,7 +345,17 @@ void subgradient(int n_vertices, int n_edges, vector<Vertex*> *vertices, vector<
 		time_current = time (NULL);
 	}
 
-	// Print standard results
+	// Prints standard results
 	print_result(n_vertices, best_lower_bound, iteration_best_lower_bound, best_upper_bound, 
 	iteration_best_upper_bound, iteration, &best_upper_bound_solution, output_file);
+
+	// Prints extra results
+	FILE* extra_print;
+	extra_print = fopen("results.csv", "a");
+	time_current = time (NULL);
+
+	print_extra_result(best_lower_bound, iteration_best_lower_bound, time_best_lower_bound,
+	best_upper_bound, iteration_best_upper_bound, time_best_upper_bound, iteration,
+	time_current - time_start, opt_by_gap_flag, opt_by_sol_flag, extra_print);
+	fclose(extra_print);
 }
