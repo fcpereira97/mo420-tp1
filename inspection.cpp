@@ -4,6 +4,7 @@
 
 using namespace std;
 
+// Erase not fixed vertice variables
 void erase_variables(int n_vertices, vector<Vertex*> *vertices)
 {
 	for(int i = 0; i < n_vertices; i++)
@@ -22,7 +23,9 @@ double inspection(int n_vertices, vector<Vertex*> *vertices)
 	for (int i = 0; i < n_vertices; i++)
 	{
 		// If cost is less than 0, then y_i is assigned with 1 value, else with 0 value
+		// Exception: if a vertex is fixed
 		double cost = 1.0 - (double)(*vertices)[i]-> degree * (*vertices)[i]-> lambda;
+
 		if((*vertices)[i]-> fixed)
 		{
 			rl2_value += cost;

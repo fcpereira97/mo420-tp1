@@ -10,14 +10,19 @@ bool compare(Edge *e_1, Edge *e_2)
     return e_1-> weight  < e_2-> weight;
 }
 
+// Erase not fixed edges variables
 void erase_variables(int n_edges, vector<Edge*> *edges)
 {
 	for(int i = 0; i < n_edges; i++)
+	{
 		if(!(*edges)[i]-> fixed)
+		{
 			(*edges)[i]-> variable = false;
+		}
+	}
 }
 
-// Calculates edges' weights based on lambda values
+// Calculates edges' weights based on its extremities lambda values
 void calc_weights(int n_edges, vector<Edge*> *edges, vector<Vertex*> *vertices)
 {
 	for(int i = 0; i < n_edges; i++)
@@ -25,16 +30,14 @@ void calc_weights(int n_edges, vector<Edge*> *edges, vector<Vertex*> *vertices)
 		Vertex *v1, *v2;
 		double weight;
 
-		// Extremities of edge i
 		v1 = (*edges)[i]-> vertex_1;
 		v2 = (*edges)[i]-> vertex_2;
 
-		// Calculates weight
 		(*edges)[i]-> weight = v1 -> lambda + v2-> lambda;
 	}
 }
 
-// Initializes disjoint setes of Union Find, creating a set for each edge
+// Initializes disjoint sets of Union Find, creating a set for each vertice
 void initialize_union_roots(int n_vertices, vector<pair<int,int>> *union_roots)
 {
 	for(int i = 0; i < n_vertices; i++)
@@ -79,38 +82,33 @@ void make_union(vector<pair<int,int>> *union_roots, int v1, int v2)
 	}
 }
 
-// Main function of Kruskal's algorithm
+// Main function of Kruskal's algorithm that returns the sum of weights in a MST
 double kruskal(int n_vertices, int n_edges, vector<Vertex*> *vertices, vector<Edge*> *edges)
 {
 
 	// Array of disjoint sets used on Union Find data structure
 	// For a edge i:
-	// First atribute corresponds to the root of i and the second one corresponds to the size of its set, if i is a root
+	// First atribute corresponds to the root of i and the second one corresponds to the size of its set,
+	// if i is a root
 	vector<pair<int, int>> union_roots(n_vertices);
 
-	// Array of edges' boolean variables
+	//General Variables
 	int tree_size, current_edge;
-
-	// Weight of minimum spanning tree
 	double tree_weight;
 
+	// First steps
 	erase_variables(n_edges, edges);
-
-	// Calculate sedges' weights
 	calc_weights(n_edges, edges, vertices);
-
-	// Sorts edges ascending by weights
 	sort((*edges).begin(), (*edges).end(), compare);
-	
-	// Initializes Union Find
 	initialize_union_roots(n_vertices, &union_roots);
 
 	
-	// Initializes Kruskal' Algorithm variables
+	// Initializes parameters
 	tree_size = 0;
 	tree_weight = 0;
 	current_edge = 0;
 
+	// Adds to MST all fixed edges, if they exist
 	for(int i = 0; i < n_edges; i++)
 	{
 		if((*edges)[i] -> fixed)
@@ -121,26 +119,30 @@ double kruskal(int n_vertices, int n_edges, vector<Vertex*> *vertices, vector<Ed
 		}
 	}
 
+	// Main Kruskal algorithm
 	while(tree_size < n_vertices - 1 && current_edge < n_edges) 
 	{
-		Vertex *v1, *v2;
 		// Selects the edge with less weight
+		Vertex *v1, *v2;
 		v1 = (*edges)[current_edge]-> vertex_1;
 		v2 = (*edges)[current_edge]-> vertex_2;
 
 		// Checks whether edge extremities belong to distinct sets 
-		// If so, then select the edge will result in a cycle!
-		// If not, the edge can be added to the tree
+		// If so, then select the edge will result in a cycle.
+		// If not, the edge can be added to the tree.
 		if(!(*edges)[current_edge]-> fixed && !check_sets(&union_roots, v1-> index , v2-> index)) 
 		{
-			make_union(&union_roots, v1-> index, v2-> index); // Makes union of disjoint sets conected by the edge
+			// Makes union of disjoint sets conected by the edge
+			make_union(&union_roots, v1-> index, v2-> index);
+
 			// Updates variables
 			(*edges)[current_edge]-> variable = true;
 			tree_size++;
 			tree_weight += (*edges)[current_edge]-> weight;
 		}
+
 		current_edge++;
 	}
-	
-		return tree_weight;
+
+	return tree_weight;
 }

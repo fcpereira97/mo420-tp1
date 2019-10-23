@@ -4,6 +4,8 @@
 
 using namespace std;
 
+
+// Erases list of incident edges of all vertices
 void erase_incident_edges(int n_vertices, vector<Vertex*> *vertices)
 {
 	for(int i = 0; i < n_vertices; i++)
@@ -12,6 +14,7 @@ void erase_incident_edges(int n_vertices, vector<Vertex*> *vertices)
 	}
 }
 
+// Erases the visitation flag of all vertices
 void erase_visitation(int n_vertices, vector<Vertex*> *vertices)
 {
 	for(int i = 0; i < n_vertices; i++)
@@ -20,6 +23,7 @@ void erase_visitation(int n_vertices, vector<Vertex*> *vertices)
 	}
 }
 
+// Calculate the number of ramifications of a vertex, based on the incidence edges list
 void calc_ramifications(int n_vertices, int n_edges, vector<Vertex*> *vertices, vector<Edge*> *edges)
 {
 	for(int i = 0; i < n_vertices; i++)
@@ -39,6 +43,7 @@ void calc_ramifications(int n_vertices, int n_edges, vector<Vertex*> *vertices, 
 	}
 }
 
+// Corrects the value of vertices variables 
 void correct_vertices_variables(int n_vertices, vector<Vertex*> *vertices)
 {
 	for(int i = 0; i < n_vertices; i++)
@@ -50,6 +55,7 @@ void correct_vertices_variables(int n_vertices, vector<Vertex*> *vertices)
 	}
 }
 
+// Find the path between vertices, based on their incidence edges lists
 void find_path(Vertex *v1, Vertex *v2, list<Edge*> *path)
 {
 	list<Edge*>::iterator incident_edge = v1->incident_edges.begin();
@@ -82,7 +88,8 @@ void find_path(Vertex *v1, Vertex *v2, list<Edge*> *path)
 	v1-> visited = false;
 }
 
-void change_edges(Edge *in_edge, Edge *out_edge)
+// Exchange a edge of the solution for another outer the solution
+void exchange_edges(Edge *in_edge, Edge *out_edge)
 {
 	out_edge-> variable = false;
 	out_edge-> vertex_1-> incident_edges.remove(out_edge);
@@ -101,11 +108,14 @@ void change_edges(Edge *in_edge, Edge *out_edge)
 	in_edge-> vertex_2-> variable = in_edge-> vertex_2-> ramifications > 2;
 }
 
+// IMP1 algorithm of Martín (2015)
+// Returns if occurred an improvement on solution value
 bool improvement_1(list<Edge*> *available_edges)
 {	
 	bool improved = false;
 	list<Edge*> available_edges_aux;
 
+	// For each edge out of solution
 	for(list<Edge*>::iterator available_edge = (*available_edges).begin(); available_edge != (*available_edges).end(); ++available_edge)
 	{
 		Vertex *v1, *v2;
@@ -113,12 +123,15 @@ bool improvement_1(list<Edge*> *available_edges)
 		v1 = in_edge-> vertex_1;
 		v2 = in_edge-> vertex_2;
 
+		// Checks if the edge's extremities v1 v2 have ramifications different of 2
 		if(v1-> ramifications != 2 && v2->ramifications != 2)
 		{
 			list<Edge*> path;
 
+			// Gets the path between v1 and v2 in the solution
 			find_path(v1, v2, &path);
 
+			// Checks if there's an edge inside the path with an extreme with ramification equals to 3 
 			Edge *out_edge = NULL;
 			for (list<Edge*>::iterator candidate_out_edge = path.begin(); candidate_out_edge != path.end(); ++candidate_out_edge)
 			{
@@ -134,10 +147,13 @@ bool improvement_1(list<Edge*> *available_edges)
 					break;
 				}
 			}
+
+			// If the second edge exists
 			if (out_edge != NULL)
 			{
 				improved = true;
-				change_edges(in_edge, out_edge);
+				// Exchanges them
+				exchange_edges(in_edge, out_edge);
 				available_edges_aux.push_back(out_edge);
 			}
 			else
@@ -147,17 +163,21 @@ bool improvement_1(list<Edge*> *available_edges)
 		}
 	}
 
+	// Updates availables edges (the edges outter from solution)
 	(*available_edges).clear();
 	(*available_edges).assign(available_edges_aux.begin(), available_edges_aux.end());
 
 	return improved;
 }
 
+// IMP2 algorithm of Martín (2015)
+// Returns if occurred an improvement on solution value
 bool improvement_2(list<Edge*> *available_edges)
 {	
 	bool improved = false;
 	list<Edge*> available_edges_aux;
 
+	// For each edge out of solution
 	for(list<Edge*>::iterator available_edge = (*available_edges).begin(); available_edge != (*available_edges).end(); ++available_edge)
 	{
 		Vertex *v1, *v2;
@@ -165,12 +185,18 @@ bool improvement_2(list<Edge*> *available_edges)
 		v1 = in_edge-> vertex_1;
 		v2 = in_edge-> vertex_2;
 
+		// Checks if the edge's any of extremities v1 v2 has ramification different of 2
 		if(v1-> ramifications != 2 || v2-> ramifications != 2)
 		{
 			list<Edge*> path;
+
+			// Gets the path between v1 and v2 from the solution
 			find_path(v1, v2, &path);
+
 			Edge *out_edge = NULL;
 
+			// If v1 or v2 has an neighbor v3 with ramification equals to 3, then selects the edge
+			// from the cycle that incides over v3
 			if(v1-> ramifications != 2)
 			{
 				Vertex *v3;
@@ -184,7 +210,6 @@ bool improvement_2(list<Edge*> *available_edges)
 					out_edge = path.back();
 				}
 			}
-
 
 			if(v2-> ramifications != 2)
 			{
@@ -200,10 +225,12 @@ bool improvement_2(list<Edge*> *available_edges)
 				}
 			}
 
+			// If the second edge was found
 			if (out_edge != NULL)
 			{
 				improved = true;
-				change_edges(in_edge, out_edge);
+				// Exchanges them
+				exchange_edges(in_edge, out_edge);
 				available_edges_aux.push_back(out_edge);
 			}
 			else
@@ -213,29 +240,28 @@ bool improvement_2(list<Edge*> *available_edges)
 		}
 	}
 
+	// Updates the set of available edges (the ones outer from solution)
 	(*available_edges).clear();
 	(*available_edges).assign(available_edges_aux.begin(), available_edges_aux.end());
 
 	return improved;
 }
 
-
+// Heuristic algorithm based on heuristics of Martín (2015)
 int heuristic(int n_vertices, int n_edges, vector<Vertex*> *vertices, vector<Edge*> *edges)
 {
+	// General variables
 	int upper_bound = 0;
-
-	// Calculates ramifications on tree
-	calc_ramifications(n_vertices, n_edges, vertices, edges);
-
-	// Corrects vertices variables
-	correct_vertices_variables(n_vertices, vertices);
-
-	erase_incident_edges(n_vertices, vertices);
-
-	erase_visitation(n_vertices, vertices);
-
 	list<Edge*> available_edges;
 
+	// First steps
+	calc_ramifications(n_vertices, n_edges, vertices, edges);
+	correct_vertices_variables(n_vertices, vertices);
+	erase_incident_edges(n_vertices, vertices);
+	erase_visitation(n_vertices, vertices);
+
+	// Sets the incident edges lists of the solution
+	// and get the set of available edges
 	for(int i = 0; i < n_edges; i++)
 	{
 		Vertex *v1, *v2;
@@ -253,8 +279,10 @@ int heuristic(int n_vertices, int n_edges, vector<Vertex*> *vertices, vector<Edg
 		}
 	}
 
+	// Excecutes alternatively IMP1 and IMP2 until there's no improvement
 	while(improvement_1(&available_edges) || improvement_2(&available_edges));
 
+	// Calculates the solution value
 	for(int i = 0; i < n_vertices; i++)
 	{
 		if((*vertices)[i]-> variable)
