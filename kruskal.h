@@ -1,5 +1,5 @@
-#ifndef AGMR_RL1_H
-#define AGMR_RL1_H
+#ifndef KRUSKAL_H
+#define KRUSKAL_H
 
 #include "mystruct.h"
 

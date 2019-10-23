@@ -4,8 +4,8 @@ TWOUP    = ..
 CC       = gcc
 CPP      = g++
 
-relaxlag: relaxlag.cpp mystruct.h agmr_rl1.cpp agmr_rl2.cpp heuristic.cpp subgradient.cpp 
-	$(CPP) -o $@ agmr_rl1.cpp agmr_rl2.cpp heuristic.cpp subgradient.cpp $<
+relaxlag: relaxlag.cpp mystruct.h preprocessing.cpp kruskal.cpp inspection.cpp heuristic.cpp subgradient.cpp 
+	$(CPP) -o $@ preprocessing.cpp kruskal.cpp inspection.cpp heuristic.cpp subgradient.cpp $<
 
 run_relaxlag: relaxlag
 	./relaxlag $(args)

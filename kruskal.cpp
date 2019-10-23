@@ -1,5 +1,5 @@
 #include <bits/stdc++.h>
-#include "agmr_rl1.h"
+#include "kruskal.h"
 #include "mystruct.h"
 
 using namespace std;

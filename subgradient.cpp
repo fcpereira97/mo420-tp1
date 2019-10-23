@@ -1,7 +1,7 @@
 #include <bits/stdc++.h>
 #include "subgradient.h"
-#include "agmr_rl1.h"
-#include "agmr_rl2.h"
+#include "kruskal.h"
+#include "inspection.h"
 #include "heuristic.h"
 
 using namespace std;

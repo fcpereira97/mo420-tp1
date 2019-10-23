@@ -1,6 +1,5 @@
 #include <bits/stdc++.h>
 #include "subgradient.h"
-#include "heuristic.h"
 #include "preprocessing.h"
 #include "mystruct.h"
 

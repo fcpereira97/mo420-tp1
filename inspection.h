@@ -1,5 +1,5 @@
-#ifndef AGMR_RL2_H
-#define AGMR_RL2_H
+#ifndef INSPECTION_H
+#define INSPECTION_H
 
 #include "mystruct.h"
 using namespace std;

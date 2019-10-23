@@ -1,5 +1,5 @@
 #include <bits/stdc++.h>
-#include "agmr_rl2.h"
+#include "inspection.h"
 #include "mystruct.h"
 
 using namespace std;
