@@ -193,9 +193,9 @@ void update_best_upper_bound(int n_edges, int iteration, int *iteration_best_upp
 }
 
 // Checks optimality by gap
-bool check_opt_by_gap(double best_upper_bound, int best_lower_bound)
+bool check_opt_by_gap(int best_upper_bound, double best_lower_bound)
 {
-	return ceil(best_upper_bound) == best_lower_bound;
+	return ceil(best_lower_bound) == best_upper_bound;
 }
 
 // Checks optmality by Lagrangian Primal solution
@@ -358,4 +358,6 @@ void subgradient(int n_vertices, int n_edges, vector<Vertex*> *vertices, vector<
 	best_upper_bound, iteration_best_upper_bound, time_best_upper_bound, iteration,
 	time_current - time_start, opt_by_gap_flag, opt_by_sol_flag, extra_print);
 	fclose(extra_print);
+
+	cout << opt_by_gap_flag << endl;
 }
