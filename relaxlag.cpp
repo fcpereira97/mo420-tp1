@@ -8,7 +8,7 @@ using namespace std;
 // Loads the number of vertices and edges
 void load_graph_size(FILE* input_file, int *n_vertices, int *n_edges)
 {
-	fscanf(input_file, "%d %d", n_vertices, n_edges);
+	int n = fscanf(input_file, "%d %d", n_vertices, n_edges);
 }
 
 // Loads the graph
@@ -27,8 +27,7 @@ void load_graph (FILE* input_file, int n_vertices, int n_edges, vector<Vertex*> 
 
 	for(int i = 0; i < n_edges; i++) 
 	{
-		fscanf(input_file, "%d %d", &v1, &v2);
-
+		int n = fscanf(input_file, "%d %d", &v1, &v2);
 		(*edges)[i] = new Edge;
 
 		(*edges)[i]-> index = i;
@@ -70,10 +69,13 @@ int main (int argc, char *argv[])
 	load_graph(input_file, n_vertices, n_edges, &vertices, &edges);
 
 	// Prints extra information
+	
+	/*
 	FILE* extra_print;
 	extra_print = fopen("results.csv", "a");
 	fprintf(extra_print, "%s, ", input_path.c_str());
 	fclose(extra_print);
+	*/
 	
 	// Executes preprocessing algorithm
 	preprocessing(n_vertices, n_edges, &vertices, &edges);

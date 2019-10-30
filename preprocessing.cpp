@@ -195,7 +195,7 @@ void preprocessing(int n_vertices, int n_edges, vector<Vertex*> *vertices, vecto
 	// Has more than two incident bridges
 	for(int i = 0; i < n_vertices; i++)
 	{
-		if(incident_bridges[i] == 2 && (*vertices)[i]-> degree > 2 || incident_bridges[i] > 2)
+		if((incident_bridges[i] == 2 && (*vertices)[i]-> degree > 2) || incident_bridges[i] > 2)
 		{
 			(*vertices)[i]-> fixed = true;
 			(*vertices)[i]-> variable = true;

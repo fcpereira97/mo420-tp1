@@ -26,11 +26,7 @@ double inspection(int n_vertices, vector<Vertex*> *vertices)
 		// Exception: if a vertex is fixed
 		double cost = 1.0 - (double)(*vertices)[i]-> degree * (*vertices)[i]-> lambda;
 
-		if((*vertices)[i]-> fixed)
-		{
-			rl2_value += cost;
-		}
-		else if(cost <= 0)
+		if((*vertices)[i]-> degree > 2 && !(*vertices)[i]-> fixed && cost <= 0)
 		{
 			(*vertices)[i]-> variable = true;
 			rl2_value += cost;	

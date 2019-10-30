@@ -81,9 +81,10 @@ void find_path(Vertex *v1, Vertex *v2, list<Edge*> *path)
 
 		++incident_edge;
 
-	} while(incident_edge != v1->incident_edges.end() && ((*path).empty() ||
-		(*path).back()-> vertex_1 -> index != v2-> index &&
-		(*path).back()-> vertex_2 -> index != v2 -> index));
+	} while(incident_edge != v1->incident_edges.end() &&
+		((*path).empty() ||
+		((*path).back()-> vertex_1 -> index != v2-> index &&
+		 (*path).back()-> vertex_2 -> index != v2-> index)));
 
 	v1-> visited = false;
 }
@@ -135,13 +136,13 @@ bool improvement_1(list<Edge*> *available_edges)
 			Edge *out_edge = NULL;
 			for (list<Edge*>::iterator candidate_out_edge = path.begin(); candidate_out_edge != path.end(); ++candidate_out_edge)
 			{
-				if((*candidate_out_edge)-> vertex_1 -> ramifications == 3 &&
+				if(((*candidate_out_edge)-> vertex_1 -> ramifications == 3 &&
 				   (*candidate_out_edge)-> vertex_1 -> index != v1-> index &&
-				   (*candidate_out_edge)-> vertex_1 -> index != v2-> index
+				   (*candidate_out_edge)-> vertex_1 -> index != v2-> index)
 				   ||
-				   (*candidate_out_edge)-> vertex_2 -> ramifications == 3 &&
+				   ((*candidate_out_edge)-> vertex_2 -> ramifications == 3 &&
 				   (*candidate_out_edge)-> vertex_2 -> index != v1-> index &&
-				   (*candidate_out_edge)-> vertex_2 -> index != v2-> index)
+				   (*candidate_out_edge)-> vertex_2 -> index != v2-> index))
 				{
 					out_edge = (*candidate_out_edge);
 					break;

@@ -28,7 +28,6 @@ void calc_weights(int n_edges, vector<Edge*> *edges, vector<Vertex*> *vertices)
 	for(int i = 0; i < n_edges; i++)
 	{
 		Vertex *v1, *v2;
-		double weight;
 
 		v1 = (*edges)[i]-> vertex_1;
 		v2 = (*edges)[i]-> vertex_2;

@@ -18,7 +18,7 @@ void set_initial_lambdas(int n_vertices, vector<Vertex*> *vertices)
 
 	for (int i = 0; i < n_vertices; i++)
 	{
-		if((*vertices)[i]-> degree <= 2)
+		if((*vertices)[i]-> degree <= 2 || (*vertices)[i]->fixed)
 		{
 			(*vertices)[i]-> lambda = 0;
 		}
@@ -34,7 +34,7 @@ void update_lambdas(int n_vertices, double step_size, vector<Vertex*> *vertices,
 {
 	for(int i = 0; i < n_vertices; i++)
 	{
-		if((*vertices)[i]-> degree > 2)
+		if((*vertices)[i]-> degree > 2 && !(*vertices)[i]-> fixed)
 		{
 			double cost = (*vertices)[i]-> lambda + step_size * (*subgradient_vector)[i];
 			if(cost < 0)
@@ -99,6 +99,12 @@ double get_lower_bound(int n_vertices, vector<Vertex*> *vertices, double rl1_val
 	current_lower_bound = (-2) * current_lower_bound;
 	current_lower_bound += rl1_value + rl2_value;
 
+	for(int i = 0; i < n_vertices; i++)
+	{
+		if((*vertices)[i]->fixed)
+			current_lower_bound++;
+	}
+
 	return current_lower_bound;
 }
 
@@ -111,7 +117,7 @@ void calc_subgradient(int n_vertices, int n_edges, vector<Vertex*> *vertices, ve
 
 	for(int i = 0; i < n_vertices; i++)
 	{
-		if((*vertices)[i]-> degree > 2)
+		if((*vertices)[i]-> degree > 2 && !(*vertices)[i]-> fixed)
 		{
 			(*subgradient_vector)[i] += - 2 - (*vertices)[i]-> degree * (*vertices)[i]-> variable;
 		}
@@ -124,12 +130,12 @@ void calc_subgradient(int n_vertices, int n_edges, vector<Vertex*> *vertices, ve
 		v1 = (*edges)[i]-> vertex_1;
 		v2 = (*edges)[i]-> vertex_2;
 
-		if(v1->degree > 2)
+		if(v1->degree > 2 && !v1-> fixed)
 		{
 			(*subgradient_vector)[v1-> index] += (*edges)[i]-> variable;
 		}
 
-		if(v1->degree > 2)
+		if(v1->degree > 2 && !v1-> fixed)
 		{
 			(*subgradient_vector)[v2-> index] += (*edges)[i]-> variable;
 		}
@@ -211,10 +217,13 @@ bool check_opt_by_sol(int n_vertices, int n_edges,  vector<Vertex*> *vertices, v
 
 	for(int i = 0; i < n_vertices; i++)
 	{
-		if(left_side[i] > (*vertices)[i]-> degree * (*vertices)[i]-> variable ||
-			(*vertices)[i]-> lambda > 0 && left_side[i] != (*vertices)[i]-> degree * (*vertices)[i]-> variable)
+		if(!(*vertices)[i]-> fixed)
 		{
-			return false;
+			if(left_side[i] > (*vertices)[i]-> degree * (*vertices)[i]-> variable ||
+				((*vertices)[i]-> lambda > 0 && left_side[i] != (*vertices)[i]-> degree * (*vertices)[i]-> variable))
+			{
+				return false;
+			}
 		}
 	}
 
@@ -318,9 +327,6 @@ void subgradient(int n_vertices, int n_edges, vector<Vertex*> *vertices, vector<
 		update_best_lower_bound(iteration, &iteration_best_lower_bound, &best_lower_bound, current_lower_bound,
 			&time_best_lower_bound, time_current - time_start);
 
-		// Calculates subgradient vector
-		calc_subgradient(n_vertices, n_edges, vertices, edges, &subgradient_vector);
-
 		// Executes heuristic algorithm
 		current_upper_bound = heuristic(n_vertices, n_edges, vertices, edges);
 
@@ -328,12 +334,14 @@ void subgradient(int n_vertices, int n_edges, vector<Vertex*> *vertices, vector<
 		time_current = time (NULL);
 		update_best_upper_bound(n_edges, iteration, &iteration_best_upper_bound, &best_upper_bound,
 			current_upper_bound, &best_upper_bound_solution, edges, &time_best_upper_bound, time_current - time_start);
-
-
+		
 		// Checks for optimality by gap
 		opt_by_gap_flag = check_opt_by_gap(best_upper_bound, best_lower_bound);
 		if(opt_by_gap_flag)
 			break;
+
+		// Calculates subgradient vector
+		calc_subgradient(n_vertices, n_edges, vertices, edges, &subgradient_vector);
 
 		// Calculates step size
 		step_size = calc_step_size(n_vertices, current_lower_bound, best_upper_bound, &subgradient_vector);
@@ -343,13 +351,15 @@ void subgradient(int n_vertices, int n_edges, vector<Vertex*> *vertices, vector<
 
 		iteration++;
 		time_current = time (NULL);
-	}
+
+		}
 
 	// Prints standard results
 	print_result(n_vertices, best_lower_bound, iteration_best_lower_bound, best_upper_bound, 
 	iteration_best_upper_bound, iteration, &best_upper_bound_solution, output_file);
 
 	// Prints extra results
+	/*
 	FILE* extra_print;
 	extra_print = fopen("results.csv", "a");
 	time_current = time (NULL);
@@ -358,6 +368,6 @@ void subgradient(int n_vertices, int n_edges, vector<Vertex*> *vertices, vector<
 	best_upper_bound, iteration_best_upper_bound, time_best_upper_bound, iteration,
 	time_current - time_start, opt_by_gap_flag, opt_by_sol_flag, extra_print);
 	fclose(extra_print);
-
-	cout << opt_by_gap_flag << endl;
+	*/
+	
 }

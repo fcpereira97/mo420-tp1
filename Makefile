@@ -5,7 +5,7 @@ CC       = gcc
 CPP      = g++
 
 relaxlag: relaxlag.cpp mystruct.h preprocessing.cpp kruskal.cpp inspection.cpp heuristic.cpp subgradient.cpp 
-	$(CPP) -o $@ preprocessing.cpp kruskal.cpp inspection.cpp heuristic.cpp subgradient.cpp $<
+	$(CPP) -O2 $< preprocessing.cpp kruskal.cpp inspection.cpp heuristic.cpp subgradient.cpp -o $@
 
 run_relaxlag: relaxlag
 	./relaxlag $(args)
