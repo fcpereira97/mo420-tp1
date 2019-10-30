@@ -1,0 +1,417 @@
+\documentclass[12pt, a4paper]{article}
+
+%%%%%%%% PACKAGES - BEGIN %%%%%%%% 
+
+\usepackage[utf8]{inputenc}
+\usepackage[english, brazil]{babel}
+\usepackage[inline]{enumitem}
+\usepackage[a4paper,left=2.5cm,right=2.5cm,top=2.5cm,bottom=2.5cm]{geometry}
+% \usepackage[subrefformat=parens,labelformat=parens]{subfig}
+\usepackage{adjustbox}
+\usepackage{amsfonts}
+\usepackage{amsmath}
+\usepackage{amsthm}
+\usepackage{amssymb}
+\usepackage{booktabs}
+\usepackage{color}
+\usepackage{float}
+\usepackage{indentfirst}
+\usepackage{graphicx, subfigure}
+\usepackage{multirow}
+\usepackage{multicol}
+\usepackage{caption} 
+\usepackage{setspace}
+\usepackage{tabularx, booktabs}
+\usepackage{tikz}
+\usepackage{titling,lipsum}
+\usepackage{hyperref}
+\usepackage[num]{abntex2cite}
+\usepackage[noend]{algpseudocode}
+\usepackage{algorithm}
+\usepackage{enumitem}
+\usepackage{xfrac}
+\usepackage{longtable}
+\setlist{nolistsep}
+\captionsetup[table]{skip=1pt}
+\captionsetup[figure]{skip=0pt}
+\citebrackets[] 
+\usepackage{titlesec}
+\titleformat*{\section}{\large\bfseries}
+\titleformat*{\subsection}{\normalsize\bfseries}
+
+%%%%%%%% PACKAGES - END %%%%%%%% 
+
+
+%%%%%%%% COLOR DEFINITION - BEGIN %%%%%%%% 
+\definecolor{c0}{HTML}{FFFFFF}
+\definecolor{c1}{HTML}{FFC107}
+\definecolor{c2}{HTML}{8BC34A}
+\definecolor{c3}{HTML}{F44336}
+\definecolor{c4}{HTML}{2196F3}
+\definecolor{c5}{HTML}{9C27B0}
+
+%%%%%%%% ALGORITHM REDEFINITION - END %%%%%%%%
+
+\makeatletter
+%%%%%%%% MATHEMATICS %%%%%%%%
+\newcommand\floor[1]{\left\lfloor#1\right\rfloor}
+\newcommand\ceil[1]{\lceil#1\rceil}
+
+%%%%%%%% LINEAR MODEL %%%%%%%%
+\newcommand{\pushright}[1]{\ifmeasuring@#1\else\omit\hfill$\displaystyle#1$\fi\ignorespaces}
+\newcommand{\pushleft}[1]{\ifmeasuring@#1\else\omit$\displaystyle#1$\hfill\fi\ignorespaces}
+\makeatother
+
+%%%%%%%% TEMPLATE - BEGIN %%%%%%%%
+
+\newcolumntype{Y}{>{\centering\arraybackslash}X}
+\usetikzlibrary{arrows.meta}
+\graphicspath{ {images/} }
+\setlength{\parindent}{2em}
+\singlespacing
+\allowdisplaybreaks
+
+%Evita quebra de palavras
+%\tolerance=1
+%\emergencystretch=\maxdimen
+%\hyphenpenalty=10000
+%\hbadness=10000
+
+%emph bold and italic
+\let\emph\relax
+\DeclareTextFontCommand{\emph}{\bfseries\em}
+\DeclareRobustCommand\iff{\Leftrightarrow}
+
+% teorema 
+\theoremstyle{plain}
+\newtheorem{thm}{Teorema}[section]
+\newtheorem{lem}[thm]{Lema}
+\newtheorem{prop}[thm]{Proposição}
+\newtheorem*{cor}{Corolário}
+\theoremstyle{definition}
+\newtheorem{defn}{Definição}[section]
+\newtheorem{conj}{Conjectura}[section]
+\newtheorem{exmp}{Exemplo}[section]
+\theoremstyle{remark}
+\newtheorem*{rem}{Remark}
+\newtheorem*{note}{Nota}
+
+\newcommand{\novo}[1]{\textcolor{blue}{#1}}
+% \newcommand{\novo}[1]{#1}
+
+\begin{document}
+
+\selectlanguage{brazil}
+
+\begin{center}
+    {\normalsize\textbf{Instituto de Computação -  UNICAMP}}\\
+    {\normalsize\textbf{Programação Linear Inteira - MO420}}\\
+    {\normalsize\textbf{Primeiro Trabalho Prático}}
+    \\ \bigskip
+    {\normalsize Professor: Cid Carvalho de Souza}\\
+    {\normalsize Aluno: Felipe de Carvalho Pereira}
+\end{center}
+
+\section{Introdução}
+
+Este documento consiste em um relatório do projeto computacional desenvolvido na disciplina Programação Linear Inteira, ministrada no segundo semestre de 2019 pelo professor Cid C. de Souza. O trabalho objetivou o estudo e implementação do método dO subgradiente (MS) para uma relaxação lagrangiana do problema da Árvore Geradora com Número Mínimo de Ramificações (AGMR). Objetivou-se também o estudo e implementação de heurísticas para o MS, além de algoritmos de pré-processamento.
+
+Introduzido por~\cite{Gargano2002}, o AGMR é definido da seguinte forma. A entrada é composta por um grafo $G = (V, E)$, conexo e não direcionado, onde $|V| = n$ e $|E| = m$. Além disso, denota-se por $T = (V^T, E^T)$ qualquer árvore geradora de $G$, de modo que um vértice $v \in V^T$ é considerado uma ramificação se seu grau é maior que $2$. Assim, estabelece-se como objetivo do AGMR a obtenção de uma árvore geradora de $G$ com quantidade mínima de ramificações. Em ~\cite{Gargano2002} também é mostrado que o problema pertence à classe $\mathcal{NP}$-difícil.
+
+Uma formulação de Programação Linear Inteira (PLI) para AGMR é apresentada em~\cite{Carrabs2013} e considera os seguintes conjuntos de variáveis binárias:
+
+\begin{itemize}[before=\vspace{\baselineskip},after=\vspace{\baselineskip}]
+
+\item $x_e, \forall \, e \in E$: se a aresta $e$ pertence à solução, então $x_e = 1$, caso contrário, $x_e = 0$.
+\item $y_v, \forall \, v \in V$: se o vértice $v$ é uma ramificação, então $y_v = 1$, caso contrário, $y_v = 0$.
+
+\end{itemize}
+
+Além disso, seja $S \subseteq V$, denota-se por $E(S)$ o conjunto de arestas que possuem ambos os extremos em $S$. Ademais, para todo $v \in V$, denotam-se por $A(v)$ e $\delta_v$, o conjunto de arestas incidentes em $v$ e o seu grau, respectivamente. A partir disso, a formulação segue:
+
+{\abovedisplayskip=0pt
+	\begin{align}
+		\displaystyle \min z &= \; \sum_{v \in V} y_v \label{objective}\\
+		\pushleft{\text{s.a.} \nonumber} & \\
+		\displaystyle\sum_{e \in E} x_e &= \; n - 1 \label{tree_size}\\
+		\displaystyle\sum_{e \in E(S)} x_e &\leq \; |S| - 1 &\forall \, S \subseteq V \label{no_cycle}\\
+		\displaystyle\sum_{e \in A(v)} x_e - 2 &\leq \; \delta_v y_v &\forall \, v \in V \label{ramification}\\
+		   y_v &\in \{0,1\} & \forall \, v \in V \label{var_y} \\
+		   x_e &\in \{0,1\} & \forall \, e \in E \label{var_x}
+	\end{align}
+}
+
+A função objetivo~\eqref{objective} minimiza o total de vértices que são ramificações. A restrição~\eqref{tree_size} estabelece que a solução contenha exatamente $n - 1$ arestas. Já a restrição~\eqref{no_cycle} impede a existência de ciclos. Perceba que estas duas restrições garantem que soluções viáveis sejam árvores geradoras. Ademais, a desigualdade~\eqref{ramification} determina que um vértice $v$ seja considerado uma ramificação se possuir mais do que duas arestas na árvore. Por fim, as restrições~\eqref{var_y} e~\eqref{var_x} definem o tipo binário das variáveis.
+
+Observe que a restrição~\eqref{ramification} é satisfeita para qualquer vértice $v$, tal que $\delta_v \leq 2$. Logo, podemos definir o conjunto $V' = \{v \in V: \delta_v > 2\}$ e reescrever~\eqref{ramification} da maneira que segue.
+
+{\abovedisplayskip=0pt
+	\begin{align}
+		\displaystyle\sum_{e \in A(v)} x_e - 2 &\leq \; \delta_v y_v &\forall \, v \in V' \label{ramification2}
+	\end{align}
+}
+
+\section{Relaxação lagrangiana}
+
+A relaxação lagrangiana proposta em~\cite{Carrabs2013} para o AGMR prevê a dualização das restrições~\eqref{ramification2}, de modo que o problema primal lagrangiano, com uso de multiplicadores $\lambda_v \geq 0 \; \forall v \in V'$ é descrito por $RL$, sujeito às restrições~\eqref{tree_size},~\eqref{no_cycle},~\eqref{var_y} e~\eqref{var_x}.
+
+\begin{equation} \label{rl_original}
+	(RL) \quad z(\lambda) = \min \sum_{v \in V'}y_v + \sum_{v \in V'}\lambda_v \left(\sum_{e \in A(v)}x_e -2 -\delta_v y_v \right) 
+\end{equation}
+
+Ao expandir os termos da equação, podemos reescrever $RL$ da maneira que segue, onde $RL_1$ está sujeito a \eqref{tree_size},~\eqref{no_cycle} e~\eqref{var_x}; e $RL_2$ sujeita-se a~\eqref{var_y}.
+
+\begin{equation} \label{rl_mod}
+	(RL) \quad z(\lambda) = -2 \sum_{v \in V'}\lambda_v + z_1(\lambda) + z_2(\lambda)
+\end{equation}
+
+\begin{equation} \label{rl_1}
+	(RL_1) \quad z(\lambda) = \min \sum_{v \in V'}\lambda_v \sum_{e \in A(v)}x_e
+\end{equation}
+
+\begin{equation} \label{rl_2}
+	(RL_2) \quad z(\lambda) = \min \sum_{v \in V'} y_v(1 - \delta_v \lambda_v)
+\end{equation}
+
+A partir da definição de $RL$, podemos definir o problema dual lagrangiano $DL$ associado a $RL$, que visa obter um conjunto de multiplicadores que maximize o problema primal.
+
+\begin{equation} \label{dl}
+	(DL) \quad \max_{\lambda \geq 0} z(\lambda) = \max_{\lambda \geq 0} -2 \sum_{v \in V'}\lambda_v + z_1(\lambda) + z_2(\lambda)
+\end{equation}
+
+Em ~\cite{Beasley1993}, encontramos que uma relaxação lagrangiana possui propriedade de integralidade quando uma solução ótima para o problema primal lagrangiano (para todos os multiplicadores possíveis), permanece inalterada ao substituir a restrição de integralidade das variáveis, isto é, $x\in\{0,1\}$, pela sua relaxação linear, ou seja, $0 \leq x \leq 1$. Ademais, quando isso acontece, temos que o melhor limitante dual obtido pela relaxação lagrangiana é igual àquele obtido pela relaxação linear do problema original.
+
+É fácil perceber que a relaxação lagrangiana para o AGMR aqui apresentada possui propriedade de integralidade. Ao solucionar $RL_2$ via inspeção, ainda que as variáveis pudessem assumir valores reais, teríamos o mesmo critério de atribuição de valor. O problema $RL_1$, como veremos na seção seguinte, equivale ao problema chamado PAGM, cujo objetivo é encontrar uma árvore geradora mínima para um grafo dado. Para o PAGM é sabido que toda solução ótima também é ótima para sua relaxação linear, uma vez que todos os pontos extremos da relaxação linear do PAGM são inteiros.
+
+Assim, concluímos que o melhor limitante dual que pode ser obtido através da relaxação lagrangiana do AGMR é igual ao limitante que seria obtido ao resolver a relaxação linear do problema. Para o AGMR, a vantagem da primeira em relação a segunda, consiste no fato de que a quantidade de restrições~\eqref{no_cycle} fazem parte da relaxação linear e são exponenciais no tamanho da entrada, tornando inviável a representação em memória computacional, à medida que a entrada cresce. Logo, resolver $DL$ equivale a resolver a relaxação linear do AGMR, mas sem a necessidade de representar explicitamente tais restrições. 
+
+\section{Metodologia}
+
+Nesta seção discutimos os métodos que foram utilizados neste trabalho para atacar o AGMR.
+
+\subsection{Método do subgradiente}
+\label{ms}
+O método do subgradiente (MS) é uma estratégia conhecida para resolver problemas duais lagrangianos~\cite{Nemhauser1988}. Trata-se de um procedimento iterativo em que, a partir de um conjunto inicial de multiplicadores de Lagrange, novos multiplicadores são gerados, de modo que o problema dual lagrangiano seja solucionado por sucessiva trocas ajustadas destes multiplicadores~\cite{Beasley1993}. Essas mudanças geram uma sequência de movimentos no espaço de soluções do problema dual, ao longo da direção de seu subgradiente. Como $DL$ é uma função linear côncava por partes, podemos aplicar o MS para resolvê-la~\cite{Carrabs2013}.
+
+A implementação do MS neste trabalho foi realizada de acordo com a descrição do algoritmo em \cite{Carrabs2013}. As rodadas são denotadas por $k$ e, na rodada $k = 0$, configuram-se os valores iniciais dos multiplicadores da seguinte maneira:
+
+\begin{center}
+	$\lambda_v = \max\limits_{u \in V'} \left\{\dfrac{1}{\delta_v}\right\}, \forall \; v \in V'$.
+\end{center}
+
+O segundo passo consiste em resolver $RL$ para os multiplicadores definidos, obtendo a solução $(x(\lambda^{(k)}), y(\lambda^{(k)}))$ e o seu respectivo valor $z(\lambda^{(k)})$. Os algoritmos usados para solucionar $RL$ serão discutidos mais à frente. Em seguida, obtém-se o vetor subgradiente, tal que a $v$-ésima componente do vetor pode ser calculada por:
+
+\begin{center}
+	$g_v^{(k)} = \displaystyle\sum_{e \in A(v)} x_e (\lambda^{(k)}) - 2 - \delta_v y_v(\lambda^{(k)})$.
+\end{center}
+
+Seja $z_{up}$ o melhor limitante superior obtido para o problem original, então o quarto passo corresponde ao cálculo do tamanho do passo $t_k$ a partir da expressão:
+
+\begin{center}
+	$t_k = \epsilon_k \dfrac{z_{up} - z(\lambda^{(k)})}{\lVert g^{(k)}\rVert^2}$
+\end{center}
+
+No quinto passo, os multiplicadores são atualizados utilizando o seguinte critério:
+
+\begin{center}
+	$\lambda_v^{(k+1)} =
+	\begin{cases}
+	0 & \text{se } \lambda_v^{(k)} + t_k g_v^{(k)} < 0 \\
+	\lambda_v^{(k)} + t_k g_v^{(k)} & \text{se } 0 \leq \lambda_v^{(k)} + t_k g_v^{(k)} \leq \dfrac{1}{\delta_v}\\
+	\dfrac{1}{\delta_v} & \text{caso contrário}
+	\end{cases}$
+\end{center}
+
+Finalmente, no sexto passo, avançamos para a iteração seguinte fazendo $k = k + 1$. Daí, o algoritmo retorna ao passo $2$. A finalização do algoritmo pode ser definida por um número limite de iterações ou por tempo limite de execução.
+
+No segundo passo do algoritmo, dois diferentes algoritmos são utilizados para resolver $RL_1$ e $RL_2$, respectivamente. Para obter a solução ótima do $RL_2$, basta realizar um procedimento de inspeção sobre as variáveis $y_v$, isto é, faz-se $y_v = 1$, se $(1 - \delta_v \lambda_v) < 0$ ou $y_v = 0$, caso contrário. É fácil perceber que, no pior caso, a complexidade da inspeção é $\theta(V)$.
+
+Ademais, o problema $RL_1$ corresponde ao PAGM, onde o peso de cada aresta $\{u, v\}$ é definido por $\lambda_u + \lambda_v$. Existem dois algoritmos gulosos e polinomiais bem conhecidos para o PAGM, são eles os algoritmos de Prim e o de Kruskal. O primeiro tem complexidade conhecida de $O(|E| + |V|\log|V|)$ no pior caso, com uso lista de adjacência e \textit{heap} de Fibonacci. Já o algoritmo de Kruskal tem complexidade $O(|E|\log|V|)$ no pior caso~\cite{Cormen2009}.
+
+Observe que, para grafos densos, ou seja, quando $|E| = O(|V|^2)$, o algoritmo de Prim é preferível, pois no pior caso teria complexidade $O(|V|^2 + |V|\log|V|)$, já o segundo teria complexidade $O(|V|^2\log|V|)$. Quando grafos esparsos são fornecidos na entrada, ou seja, $|E| = O(|V|)$, opta-se pelo uso do algoritmo de Kruskal, pois no pior caso, tem-se complexidade $O(|V|\log|V|)$, já para o primeiro, tem-se $O(|V| + |V|\log|V|)$.
+
+Nas implementações adotadas neste trabalho, adotou-se o algoritmo de Kruskal para resolução do $RL_1$, uma vez que, para os experimentos computacionais previstos no projeto, as instâncias contém grafos esparsos. 
+
+Durante a execução do MS, existem duas maneiras de verificar a obtenção de otimalidade. A primeira é trivial e ocorre quando o melhor limitante dual encontrado igualou-se ao melhor limitante primal. Logo, a solução que gerou o melhor limitante primal é ótima. Note que como o AGMR tem valor de solução inteiro, então pode-se considerar o teto do limitante dual obtido via MS, afim de comprovar otimalidade. A segunda maneira consiste em verificar se a solução que gerou o limitante dual é ótima para o AGMR.
+
+Segundo~\cite{Beasley1993}, supondo que os multiplicadores de Lagrange são maiores ou iguais a $0$, então uma solução do problema primal lagrangiano é ótima para o problema original se a solução é factível para o problema original e se a restrição dualizada é satisfeita na igualdade quando o multiplicador correspondente é estritamente positivo.
+
+Para o MS aplicado ao AGMR, temos, a cada iteração, uma solução $X = (x_e, y_v)$ do $RL$. Observe que as variáveis $x_e$ contém a solução ótima para o $RL_1$, e portanto, não possui ciclos, atendendo à restrição~\eqref{no_cycle}, e contém exatamente $n - 1$ arestas, atendendo à restrição~\eqref{tree_size}. Além disso, $X$ é inteira e atende às restrições~\eqref{var_x} e~\eqref{var_y}. Logo, para verificar a factibilidade de $X$ para o problema original, basta verificar se as variáveis $y_v$ atendem à restrição~\eqref{ramification2}.
+
+Uma vez que $X$ é factível para o problema primal, verificamos se a restrição~\eqref{ramification2} é satisfeita na igualdade sempre que o $\lambda$ correspondente é positivo. Se sim, então $X$ é ótima para o problema original. Neste trabalho ambas as técnicas de verificação de otimalidade foram implementadas e são executadas em todas as iterações do MS.
+
+\subsection{Heurísticas para o MS}
+
+Foram estudadas e implementadas duas heurísticas para utilização durante o MS, chamadas IMP1 e IMP2. Ambas são propostas em~\cite{Marin2015} e são iniciadas a partir de uma solução factível do AGMR, isto é, uma árvore geradora qualquer.
+
+A heurística IMP1 itera sobre o conjunto de arestas que estão fora da árvore. Se uma aresta $e = (v, u)$, tal que $\delta_v \neq 2$ e $\delta_u \neq 2$, é encontrada, então verifica-se a existência de uma aresta $e'$ pertencente ao caminho de $v$ para $u$ na árvore, tal que uma das extremidades de $e'$ tem grau igual a $3$, excetuando $v$ e $u$. Se $e'$, existe então tal aresta é removida da árvore e a aresta $e$ é adicionada. Note que, se $e$ e $e'$ forem devidamente encontradas, tal procedimento produz uma nova árvore geradora com pelo menos uma ramificação a menos. O algoritmo para quando todas as arestas que estavam inicialmente fora da árvore foram testadas.
+
+A complexidade de IMP1 no pior caso é $O(|E||V|)$, onde o custo para checar todas as arestas fora da árvore é $O(|E|)$ e o custo para obter o caminho entre dois vértices na árvore é $O(|V|)$. Note que para grafos esparsos, podemos ter pior caso em $O(|V|^2)$.
+
+O algoritmo IMP2 também itera sobre o conjunto de arestas que estão fora da árvore. Se uma aresta $e = (v, u)$, tal que $\delta_v \neq 2$, é encontrada, então considera-se a aresta $e' = (u, x)$ existente no caminho de $v$ para $u$ na árvore, com $x \neq v$. Se $\delta_x = 3$, então a aresta $e'$ é removida da árvore e a aresta $e$ é adicionada. Observe que, se $e$ e $e'$ forem devidamente encontradas, o procedimento produz uma nova árvore geradora com uma ramificação a menos. A heurística é finalizada quando todas as arestas que estavam inicialmente fora da árvore foram testadas. A análise de complexidade do IMP2 é análoga a do IMP1, com mesmo custo para o pior caso.
+
+Neste trabalho, a cada iteração do MS, ambas as heurísticas são acionadas após a resolução de $RL$ e recebem como entrada a solução de $RL_1$. Ao serem iniciadas, IMP1 e IMP2 são executadas alternadamente até que, em algum momento, nenhuma das duas heurísticas produzam melhoria o valor da solução.
+
+\subsection{Pré-processamento}
+
+Neste trabalho foi implementada uma técnica de pré-processamento proposta em~\cite{Marin2015} para o AGMR. Tal técnica consiste em duas fases. Na primeira, constrói-se uma arborescência para o grafo original através de uma busca em profundidade. Note que uma arborescência de um grafo é um subgrafo direcionado no qual existe um vértice raiz $v$, e, para qualquer outro vértice $u$, só existe um único caminho direcionado de $v$ para $u$. A partir da arborescência, verifica-se quais arestas do grafo são pontes. Uma aresta é denominada ponte se sua deleção resulta no aumento do número de componentes do grafo.
+
+Observe que a entrada do AGMR é composta por um grafo conexo. Isso significa que as pontes estão presentes em todas as soluções ótimas do problema. Ademais, se um vértice $v$ possui $3$ pontes incidentes, ou, se $v$ possui $2$ pontes incidentes e $\delta_v \geq 3$, então $v$ é uma ramificação em todas as soluções viáveis do problema. Neste trabalho, essa técnica de pré-processamento foi utilizada como rotina a ser executada antes do MS. Uma vez identificadas as pontes e as ramificações, as variáveis correspondentes à estes são fixadas no valor $1$.
+
+A vantagem de fixar $x_e = 1$ para alguma ponte $e \in E$ consiste no fato de que podemos inserir $e$ previamente em todas as soluções do $RL_1$. Como fazemos uso do algoritmo de Kruskal para resolver tal problema, então as arestas fixadas podem ser inseridas diretamente na árvore geradora, antes da execução do algoritmo e sem a necessidade de verificar se os extremos de $e$ pertencem à conjuntos disjuntos. O resultado disso é uma amortização no custo de resolver $RL_1$, dada em função do número de pontes encontradas no pré-processamento.
+
+Ademais, fixar $y_v = 1$ para alguma ramificação $v$ identificada no pré-processamento, nos permite que a restrição em~\eqref{ramification2} correspondente à $y_v$ não seja dualizada. Isto equivale a definir o conjunto $V'' = \{v \in V': v \text{ é uma ramificação}\}$ e rescrever~\eqref{ramification2} da seguinte forma:
+
+{\abovedisplayskip=0pt
+	\begin{align}
+		\displaystyle\sum_{e \in A(v)} x_e - 2 &\leq \; \delta_v y_v &\forall \, v \in V' \setminus V'' \label{ramification3}
+	\end{align}
+}
+
+Assim, ajustamos o problema $RL$, incluindo o valor da variável de cada uma das ramificações, isto é, $|V''|$:
+
+\begin{equation} \label{rl_mod_pre}
+	(RL) \quad z(\lambda) = |V''| -2 \sum_{v \in V' \setminus V''}\lambda_v + z_1(\lambda) + z_2(\lambda)
+\end{equation}
+
+\section{Experimentos}
+
+Nesta seção, apresentamos como os experimentos computacionais foram conduzidos neste trabalho e quais resultados foram obtidos.
+ 
+\subsection{Configurações}
+
+Um conjunto de $400$ instâncias com quantidades de vértices entre $20$ e $500$ foram utilizadas para a condução de experimentos neste trabalho. Tais instâncias também foram empregadas em~\cite{Carrabs2013}. Além disso, estabelecemos quatro diferentes configurações de execuções, a saber:
+
+\begin{itemize}[before=\vspace{\baselineskip},after=\vspace{\baselineskip}]
+\item SG: MS sem pré-processamento e sem heurísticas;
+\item SG-P: MS com pré-processamento e sem heurísticas;
+\item SG-H: MS sem pré-processamento e com heurísticas;
+\item SG-P-H: MS com pré-processamento e com heurísticas;
+\end{itemize}
+
+Cada configuração foi executada uma vez para cada uma das instâncias, totalizando $1600$ casos de teste. Em todas as configurações, o parâmetro $\epsilon$ foi fixado em $0,01$ para todas as iterações do MS. Em experimentos preliminares com uma pequena amostra de instâncias, tal valor de $\epsilon$ gerou resultados melhores que os demais valores testados. Ademais, nas configurações SG e SG-P, em que não há o uso de heurísticas, os limitantes superiores utilizados pelo MS são obtidos pela solução do $RL_1$ a cada iteração.
+
+Para cada caso de teste, estabeleceu-se o limite de tempo de execução de $10$ segundos, incluídos os tempos de pré-processamento e heurísticas para as configurações que contam com tais rotinas. Entretanto, configuramos o MS para ser finalizado quando algum dos dois critérios de otimalidade, discutidos na seção~\ref{ms}, é atingido. Os casos de teste foram executados sequencialmente em uma mesma máquina. Tal máquina contém 8GB de memória RAM e um processador Intel Core i7-7500U com \textit{clock} de 2.70GHz.
+
+\subsection{Resultados}
+
+Os resultados dos experimentos estão dispostos nas tabelas~\ref{t1},~\ref{t2},~\ref{t3},e~\ref{t4}, referentes às configurações SG, SG-P, SG-H e SG-P-H, respectivamente. As colunas de cada tabela correspondem às seguintes informações:
+
+\begin{itemize}[before=\vspace{\baselineskip},after=\vspace{\baselineskip}]
+\item \textbf{Instância}: nome da instância;
+\item \textbf{LB}: melhor limitante inferior obtido;
+\item \textbf{ILB}: iteração em que o melhor limitante inferior foi obtido;
+\item \textbf{TLB}: tempo em que o melhor limitante inferior foi obtido (em segundos);
+\item \textbf{UB}: melhor limitante superior obtido;
+\item \textbf{IUB}: iteração em que o melhor limitante superior foi obtido;
+\item \textbf{TUB}: tempo em que o melhor limitante superior foi obtido (em segundos);
+\item \textbf{GAP}: \textit{gap} de otimalidade entre os melhores limitantes;
+\item \textbf{ITER}: número total de iterações realizadas;
+\item \textbf{TIME}: tempo total da execução (em segundos);
+\item \textbf{OPTG}: otimalidade verificada por \textit{gap} ($0$ para não e $1$ para sim);
+\item \textbf{OPTS}: otimalidade verificada por solução primal lagrangiana ($0$ para não e $1$ para sim).
+\end{itemize}
+
+Observando as tabelas mencionadas, fica claro que, em geral, para uma mesma instância, a quantidade de iterações do MS realizada pelas configurações SG e SG-P é bastante superior àquelas realizadas por SG-H e SG-P-H. Esse comportamento era esperado e se deve ao fato de que há um \textit{overhead} causado pelo uso das heurísticas a cada iteração. Note que SG-P contém a rotina de pré-processamento, mas ela só é realizada uma única vez antes da execução do MS, ocasionando um \textit{overhead} mínimo. Quanto ao tempo gasto pelas configurações, temos que, excetuando as execuções que alcançaram otimalidade, todas as demais atingiram o limite de tempo estabelecido de $10$ segundos.
+
+Para analisar a qualidade dos limitantes inferiores, utilizaremos o critério de arredondamento para cima dos limitantes inferiores, uma vez que todo valor de solução do AGMR é inteiro. Assim, temos que, apenas para $6$ instâncias, SG-H obteve melhores limitantes inferiores que SG. Por outro lado, SG obteve melhores limitantes que SG-H para $231$ instâncias. Além disso, para a ampla maioria das execuções, o melhor limitante inferior foi obtido na iteração $k = 1$. Isso mostra que a utilização de heurísticas não surtiu efeito positivo na melhoria dos limitantes inferiores.
+
+Quanto ao uso de pré-processamento, verificou-se que para $375$ instâncias, SG-P obteve melhores limitantes inferiores que SG. Na média, a diferença entre os limitantes gerados por SG-P e SG-P é igual a $17.18$, de modo que a maior discrepância foi de $70$. Comparando SG-P e SG-P-H, verificamos que, SG-P gerou, para $170$ instâncias, melhores limitantes inferiores que SG-P-H. Isso corrobora a observação anterior de que as heurísticas propostas contribuíram negativamente para a melhoria dos limitantes inferiores. Entretanto, a diferença máxima encontrada entre os limitantes produzidos por SG-P e SG-P-H foi de $2$.
+
+Agora, partiremos para uma análise da qualidade dos limitantes superiores. Verificamos que a configuração SG-H obteve melhores limitantes superiores para $375$ instâncias, em relação a SG. Na média, a diferença entre os limitantes gerados por SG-H e SG foi de $6.90$, enquanto que a maior discrepância registrada foi de $23$. Para apenas uma instância SG foi capaz de gerar um limitante superior melhor que SG-H.
+
+Ademais, observamos que a configuração SG-P gerou melhores limitantes superiores que SG-H apenas para $26$ instâncias, tendo sido superada em outras $320$ instâncias. Entretanto, verificamos que a configuração SG-P-H superou SG-H em $265$ instâncias, de modo que, apenas para $24$ instâncias, SG-H obteve melhores limitantes superiores que SG-P-H. Isso mostra que para a obtenção de melhores limitantes superiores, o uso combinado de heurísticas e pré-processamento apresentou desempenho superior às demais configurações.
+
+Analisaremos agora as instâncias para as quais conseguiu-se obter uma solução ótima. A tabela~\ref{opt} exibe
+as 12 instâncias para as quais a otimalidade foi verificada por checagem de \textit{gap}, além dos seus respectivos valores ótimos. Nenhuma instância teve otimalidade verificada via solução primal lagrangiana. Através da tabela, concluímos também que as configurações SG, SG-P, SG-H e SG-PH geraram soluções ótimas para, respectivamente, $1$, $8$, $2$ e $6$ instâncias. 
+
+% Please add the following required packages to your document preamble:
+% \usepackage{booktabs}
+\begin{table}[H]
+\centering
+\caption{Otimalidade de instâncias}
+\label{opt}
+\begin{tabular}{@{}lccccc@{}}
+\toprule
+\multicolumn{1}{c}{Instância} & SG                    & SG-P                  & SG-H                  & SG-P-H                & z* \\ \midrule
+Spd\_RF2\_20\_27\_227         &                       & \checkmark &                       &                       & 2  \\
+Spd\_RF2\_20\_27\_235         &                       & \checkmark &                       & \checkmark & 3  \\
+Spd\_RF2\_20\_27\_243         &                       & \checkmark &                       & \checkmark & 4  \\
+Spd\_RF2\_20\_34\_259         &                       & \checkmark &                       &                       & 1  \\
+Spd\_RF2\_20\_42\_291         & \checkmark & \checkmark &                       &                       & 1  \\
+Spd\_RF2\_20\_42\_299         &                       & \checkmark &                       &                       & 0  \\
+Spd\_RF2\_20\_49\_331         &                       &                       &                       & \checkmark & 0  \\
+Spd\_RF2\_20\_49\_355         &                       &                       & \checkmark &                       & 0  \\
+Spd\_RF2\_20\_49\_363         &                       &                       &                       & \checkmark & 0  \\
+Spd\_RF2\_40\_50\_619         &                       & \checkmark &                       &                       & 7  \\
+Spd\_RF2\_20\_57\_403         &                       &                       & \checkmark & \checkmark & 0  \\
+Spd\_RF2\_60\_71\_1043        &                       & \checkmark &                       & \checkmark & 15 \\ \bottomrule
+\end{tabular}
+\end{table}
+
+Por fim, analisaremos a variação dos limitantes inferior e superior, além do tamanho do passo, na execução da configuração SG-P com a instância \textit{Spd\_RF2\_100\_159\_1939}. Tais dados estão apresentados na figura~\ref{fig:graphic}, onde denotam-se:
+
+\begin{itemize}[before=\vspace{\baselineskip},after=\vspace{\baselineskip}]
+\item \textbf{BLB}: melhor limitante inferior obtido;
+\item \textbf{CLB}: limitante inferior corrente, obtido na iteração $k$;
+\item \textbf{BUB}: melhor limitante superior obtido;
+\item \textbf{CUB}: limitante superior corrente, obtido na iteração $k$;
+\item \textbf{t\_k}: tamanho do passo na iteração $k$.
+\end{itemize}
+
+\begin{figure}[H]
+\centering     %%% not \center
+\caption{Variação de limitantes e tamanho de passo durante execução do MS} \label{fig:graphic} 
+\includegraphics[height=0.5\textwidth]{pics/graphic.png}
+\end{figure}
+
+O tamanho do passo, $t_k$, pode ser obtido ao multiplicar $10^{-3}$ pelo valor representado no gráfico na iteração $k$. Ademais, por razões de legibilidade, omitimos a iteração $k = 0$, na qual, BLB = CLB = $-165$, BUP = CUB = $21$ e $t_k = 13 10^{-3}$. Também omitimos as iterações a partir de $k \geq 50$, pois os limitantes permanecem inalterados.
+
+O valor de CLB negativo na iteração $0$ pode ser explicado pela configuração inicial dos multiplicadores. Multiplicadores demasiadamente altos, contribuem para aumento do primeiro termo de $z(\lambda)$, $-2 \sum_{v \in V'} \lambda_v$, que é negativo, resultando em um possível limitante inferior muito negativo.
+
+A variação dos limitantes corresponde a um comportamento esperado para o MS, onde podemos perceber uma diminuição gradual do \textit{gap} à medida que as iterações avançam. Observe que até a iteração $28$, a cada $5$ iterações, houve mudança em pelo menos um dos dois melhores limitantes. Nesse intervalo, tanto o valor de $t_k$, quanto a sua variação entre as iterações é menor do que aquilo que temos a partir da iteração $30$.
+
+Isso sugere que, enquanto havia melhoria frequente no \textit{gap}, o tamanho do passo permaneceu menor e com mudanças menos abruptas, evitando que movimentos grandes fossem feitos no subgradiente. Entretanto, uma vez que o \textit{gap} passou a não apresentar melhorias, tamanhos de passos mais largos foram adotados, além de variações mais discrepantes entre as iterações, ocasionando movimentos maiores na busca por novos limitantes. Notemos ainda que, na configuração SG-P, CUB é influenciado diretamente pelo $t_k$, uma vez que este contribui na determinação dos novos multiplicadores, os quais são utilizados para calcular os pesos das arestas no $RL_1$. Tal influência pode ser observada na figura~\ref{fig:graphic}.
+
+\section{Conclusão}
+
+Todas as atividades previstas para este trabalho foram devidamente realizadas. Dentre as principais, podemos mencionar o estudo e implementação do MS, além da análise e implementação de heurísticas e técnicas de pré-processamento para o AGMR.
+
+Além disso, um conjunto de experimentos foi conduzido e, a partir dos resultados obtidos, constatamos que a configuração SG-P obteve melhor desempenho quanto à qualidade dos limitantes inferiores gerados. Diante dos dados apresentados, associamos o bom desempenho deste algoritmo ao uso das técnicas de pré-processamento propostas. Também verificamos que a configuração SG-P-H foi capaz de produzir melhores limitantes superiores em relação às demais configurações. O uso das heurísticas propostas revelou uma melhoria na obtenção de tais limitantes. Essa melhoria foi potencializada com o uso combinado das heurísticas e do pré-processamento.
+
+De um modo geral, consideramos que os resultados produzidos eram esperados. Entretanto, observou-se que o uso de heurísticas surtiu um efeito negativo quanto a qualidade dos limitantes inferiores. A priori, existe a possibilidade de que isso se deva à quantidade reduzida de iterações quanto ao uso de heurísticas. Todavia, verificou-se que para a maioria das instâncias, o melhor limitante inferior é obtido logo nas primeiras iterações.
+
+Além disso, observou-se que a diferença absoluta entre os limitantes inferiores obtidos por SG-P e SG-P-H foi de no máximo $2$. A partir disso, podemos considerar a possibilidade de que a utilização das heurísticas possa ter causado algum tipo de erro númerico para alguma etapa do MS, ou de que erros de implementação de tais algoritmos foram cometidos.
+
+Ademais, concluímos que a realização deste trabalho foi de grande relevância para a compreensão de parte do conteúdo da disciplina de Programação Linear Inteira, principalmente quanto aos tópicos relativos à Relaxação Lagrangiana.
+
+\bibliographystyle{abnt-num}
+\bibliography{refs}
+
+\appendix
+\newpage
+
+\section{Resultados do SG}
+\scriptsize
+\input{tabela-SG}
+\newpage
+
+\normalsize
+\section{Resultados do SG-P}
+\scriptsize
+\input{tabela-SG-P}
+\newpage
+
+\normalsize
+\section{Resultados do SG-H}
+\scriptsize
+\input{tabela-SG-H}
+\newpage
+
+\normalsize
+\section{Resultados do SG-P-H}
+\scriptsize
+\input{tabela-SG-P-H}
+
+\end{document}
+

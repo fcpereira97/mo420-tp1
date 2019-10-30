@@ -1,0 +1,44 @@
+\providecommand{\abntreprintinfo}[1]{%
+ \citeonline{#1}}
+\begin{thebibliography}{}
+\providecommand{\abntrefinfo}[3]{}
+\providecommand{\abntbstabout}[1]{}
+\abntbstabout{1.42.2.1 }
+
+\bibitem{Gargano2002}
+\abntrefinfo{Gargano et al.}{GARGANO et al.}{2002}
+{GARGANO, L. et al. Spanning trees with bounded number of branch vertices. In:
+  WIDMAYER, P. et al. (Ed.). \emph{Automata, Languages and Programming}.
+  Berlim: Springer Berlin Heidelberg, 2002. p. 355--365.}
+
+\bibitem{Carrabs2013}
+\abntrefinfo{Carrabs et al.}{CARRABS et al.}{2013}
+{CARRABS, F. et al. Lower and upper bounds for the spanning tree with minimum
+  branch vertices.
+\emph{Computational Optimization and Applications}, v.~56, n.~2, p. 405--438,
+  out. 2013.}
+
+\bibitem{Beasley1993}
+\abntrefinfo{Beasley}{BEASLEY}{1993}
+{BEASLEY, J.~E. Lagrangian relaxation. In:  REEVES, C.~R. (Ed.). \emph{Modern
+  Heuristic Techniques for Combinatorial Problems}. Nova Iorque: John Wiley \&
+  Sons, Inc., 1993. p. 243--303.}
+
+\bibitem{Nemhauser1988}
+\abntrefinfo{Nemhauser e Wolsey}{NEMHAUSER; WOLSEY}{1988}
+{NEMHAUSER, G.~L.; WOLSEY, L.~A. \emph{Integer and Combinatorial Optimization}.
+  Nova Iorque: Wiley-Interscience, 1988.}
+
+\bibitem{Cormen2009}
+\abntrefinfo{Cormen et al.}{CORMEN et al.}{2009}
+{CORMEN, T.~H. et al. \emph{Introduction to Algorithms}. 3ª. ed. [S.l.]: The
+  MIT Press, 2009.}
+
+\bibitem{Marin2015}
+\abntrefinfo{Marín}{MARíN}{2015}
+{MARíN, A. Exact and heuristic solutions for the minimum number of branch
+  vertices spanning tree problem.
+\emph{European Journal of Operational Research}, v.~245, n.~3, p. 680 -- 689,
+  abr. 2015.}
+
+\end{thebibliography}
